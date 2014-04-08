@@ -1,5 +1,5 @@
 (defproject im.chit/juy "0.1.0-SNAPSHOT"
-  :description "transformations for clojure source code"
+  :description "Manipulate source code like the DOM"
   :url "http://github.com/zcaudate/juy"
   :license {:name "The MIT License"
             :url "http://http://opensource.org/licenses/MIT"}
