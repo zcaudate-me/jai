@@ -38,15 +38,29 @@
 (comment
   (>pst)
 
-  [defn :> {:type :vector}]
+  '[defn :> {:type :vector}]
+  :replace '(1 2 3 4)
+  :update
+  :insert
+  :delete
 
-  (->> (juy "src/juy/match.clj" ['defn] (fn [n]
-                                          (-> n z/down (z/replace 'defn++) z/up)))
-       ;;(map root-sexp)
+  [:right 2 :delete 1 :]
+
+  [:replace-code "\n   (1 2 3 4)  \n"]
+  [:replace-code "\n   (1 2 3 4)  \n"]
+  [:replace-code "\n   (1 2 3 4)  \n"]
+  :insert [1 "   code    "] :code
+  :insert [1 "   code    "]
+
+  (->> (juy "src/juy/match.clj" ['defn 'if]
+            ;;[:top-level :up 1 :update (fn [sym] (symbol "+" sym)) :replace 'defn :move 2 :delete 1]
+            #_(fn [n]
+              (-> n (z/replace 'defn++))))
+       (map root-sexp)
        (map z/sexpr))
 
-  (->> (juy "src/juy/match.clj" ['(defn _ ^:+ vector? & _)
-                                 'if])
+  (->> (juy "src/juy/match.clj" ['(defn _ ^:+ string? & _)
+                                 ])
        (map root-sexp)
        (map z/sexpr))
 
@@ -127,7 +141,7 @@
 
      (matchwalk sample
                 [(compile-matcher 'defn)
-                 (compile-matcher {:right number?})]
+                 (compile-matcher {:contains number?})]
                 (fn [node]
                   ;;(z/replace node "hello")
                   (println (z/sexpr node))

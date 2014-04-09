@@ -23,7 +23,9 @@
   (Matcher. (fn [zloc]
               (-> zloc z/tag (= template)))))
 
-(defn p-is [template]
+(defn p-is
+  "hello world"
+  [template]
   (Matcher. (fn [zloc]
               (if (fn? template)
                 (-> zloc z/sexpr template)
@@ -43,6 +45,8 @@
   (Matcher. (fn [zloc]
               (->> (map (fn [m] (m zloc)) matchers)
                    (some true?)))))
+
+(declare p-contains p-right p-left)
 
 (defn compile-matcher [template]
   (cond (:- (meta template)) (p-is template)
@@ -65,16 +69,6 @@
                         ))
                     template))))
 
-(defn p-contains [template]
-  (Matcher. (fn [zloc]
-              (let [mf (compile-matcher template)]
-                (if-let [chd (z/down zloc)]
-                  (->> chd
-                       (iterate z/right)
-                       (take-while identity)
-                       (map mf)
-                       (some identity)))))))
-
 (defn nested-compile-matcher [template]
   (let [template (if (and (or (hash-map? template)
                               (set? template)
@@ -83,3 +77,13 @@
                           (-> (meta template) :- not))
                    (compile-matcher template)
                    (p-is template))]))
+
+(defn p-contains [template]
+  (Matcher. (fn [zloc]
+              (let [mf (nested-compile-matcher template)]
+                (if-let [chd (z/down zloc)]
+                  (->> chd
+                       (iterate z/right)
+                       (take-while identity)
+                       (map mf)
+                       (some identity)))))))
