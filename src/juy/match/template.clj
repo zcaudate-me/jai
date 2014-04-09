@@ -52,10 +52,15 @@
 (defn match-clauses [template]
   [[(transform-match template)] true :else false])
 
-(defn match-template [form template]
+(defn match-fn [template]
   (let [clauses (match-clauses template)
         sym   (gensym)
         match-form (clojure.core.match/clj-form [sym] clauses)
-        all    (list 'let [sym (list 'quote form)]
-                     match-form)]
-    (eval all)))
+        all-fn    `(fn [form#]
+                     (let [~sym form#]
+                       ~match-form))]
+    (eval all-fn)))
+
+(comment
+  ((match-fn '(defn & _)) '(defn x []))
+  )

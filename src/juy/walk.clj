@@ -46,3 +46,20 @@
                 (z/left (matchwalk zright matchers f))
                 nloc)]
     nloc))
+
+(defn levelwalk
+  [zloc [m & more :as matchers] f]
+  (let [nloc (if (m zloc)
+               (cond (empty? more)
+                     (f zloc)
+
+                     (z/down zloc)
+                     (z/up (levelwalk (z/down zloc) more f))
+
+                     :else
+                     zloc)
+               zloc)
+        nloc  (if-let [zright (z/right nloc)]
+                (z/left (levelwalk zright matchers f))
+                nloc)]
+    nloc))

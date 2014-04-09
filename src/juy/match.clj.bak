@@ -1,18 +1,21 @@
 (ns juy.match
   (:require [rewrite-clj.zip :as z]
-            [hara.common.checks :refer [hash-map? regex?]]
-            [juy.match.template :refer [match-fn]]))
+            [hara.common.checks :refer [hash-map?]]
+            [juy.match.template :refer [match-template]]))
 
 (defrecord Matcher [fn]
   clojure.lang.IFn
   (invoke [this zloc]
-    (fn zloc)))
-
-(defn matcher [f]
-  (Matcher. f))
+    ((:fn this) zloc)))
 
 (defn matcher? [x]
   (instance? Matcher x))
+
+(defn matches? [zloc template]
+  (cond (fn? template) (template (z/sexpr zloc))
+        (matcher? template) ((:fn template) zloc)
+        (list? template) (match-template (z/sexpr zloc) template)
+        :else (= template (z/sexpr zloc))))
 
 (defn p-symbol [template]
   (Matcher. (fn [zloc]
@@ -25,31 +28,47 @@
 
 (defn p-is [template]
   (Matcher. (fn [zloc]
-              (if (fn? template)
-                (-> zloc z/sexpr template)
-                (-> zloc z/sexpr (= template))))))
+              (-> zloc z/sexpr (= template)))))
 
 (defn p-matches [template]
   (Matcher. (fn [zloc]
-              (let [mf (match-fn template)]
-                (-> zloc z/sexpr mf)))))
+              (-> zloc (matches? template)))))
+
+(defn p-left [template]
+  (Matcher. (fn [zloc]
+              (if zloc
+                (-> zloc z/left (matches? template))))))
+
+(declare nested-compile-matcher)
+
+(defn p-right [template]
+  (Matcher. (fn [zloc]
+              (if zloc
+                (-> zloc z/right (matches? (nested-compile-matcher template)))))))
+
+(defn p-contains [template]
+  (Matcher. (fn [zloc]
+              (if-let [chd (z/down zloc)]
+                (->> chd
+                     (iterate z/right)
+                     (take-while identity)
+                     (map #(matches? % template))
+                     (some identity))))))
 
 (defn p-and [& matchers]
   (Matcher. (fn [zloc]
-              (->> (map (fn [m] (m zloc)) matchers)
+              (->> (map #(% zloc) matchers)
                    (every? true?)))))
 
 (defn p-or [& matchers]
   (Matcher. (fn [zloc]
-              (->> (map (fn [m] (m zloc)) matchers)
+              (->> (map #(% zloc) matchers)
                    (some true?)))))
 
 (defn compile-matcher [template]
-  (cond (:- (meta template)) (p-is template)
-        (symbol? template)   (p-symbol template)
-        (fn? template)       (p-is template)
+  (cond (symbol? template)   (p-symbol template)
+        (fn? template)       (p-matches template)
         (list? template)     (p-matches template)
-        (regex? template)    (p-matches template)
         (vector? template)   (apply p-and (map compile-matcher template))
         (set? template)      (apply p-or (map compile-matcher template))
         (hash-map? template)
@@ -59,21 +78,10 @@
                         :type     (p-type v)
                         :matches  (p-matches v)
                         :is       (p-is v)
-                        :contains (p-contains v)
-                        ;;:right    (p-right v)
-                        ;;:left     (p-left v)
-                        ))
+                        :right    (p-right v)
+                        :left     (p-left v)
+                        :contains (p-contains v)))
                     template))))
-
-(defn p-contains [template]
-  (Matcher. (fn [zloc]
-              (let [mf (compile-matcher template)]
-                (if-let [chd (z/down zloc)]
-                  (->> chd
-                       (iterate z/right)
-                       (take-while identity)
-                       (map mf)
-                       (some identity)))))))
 
 (defn nested-compile-matcher [template]
   (let [template (if (and (or (hash-map? template)
@@ -82,4 +90,4 @@
                               (vector? template))
                           (-> (meta template) :- not))
                    (compile-matcher template)
-                   (p-is template))]))
+                   template)]))

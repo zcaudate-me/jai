@@ -4,10 +4,7 @@ Manipulate source code like the DOM
 
 ## Usage
 
-`juy` combines two very useful libraries - [rewrite-clj] and [core.match] to birth a jquery/xpath - inspired dsl for source code manipulation.
-
-is an amazing library for source code manipulation. But zipper traversal is a very difficult way to control. 
-Declarative code traversals are still the best for 
+`juy` combines two very useful libraries - [rewrite-clj](https://github.com/xsc/rewrite-clj) and [core.match](https://github.com/clojure/core.match) to birth a jquery/xpath - inspired dsl for source code manipulation.
 
 ## License
 

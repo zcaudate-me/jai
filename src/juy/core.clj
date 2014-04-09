@@ -1,162 +1,195 @@
 (ns juy.core
   (:require [rewrite-clj.zip :as z]
-            [juy.walk :refer [matchwalk postwalk prewalk]]
+            [juy.walk :refer [matchwalk postwalk prewalk levelwalk]]
             [juy.match :refer [compile-matcher]]))
 
-(defn juy [f templates]
-  (let [zloc (z/of-file f)
-        atm  (atom [])]
-    (matchwalk zloc
-               (map compile-matcher templates)
-               (fn [zloc]
-                 (println (meta (z/node zloc)))
-                 (swap! atm conj zloc)))
-    @atm))
+(defn juy
+  ([f templates]
+     (juy f templates nil))
+  ([f templates update-fn]
+      (let [zloc (z/of-file f)
+            atm  (atom [])]
+        (levelwalk zloc
+                        (map compile-matcher templates)
+                        (fn [zloc]
+                          (let [nloc (if update-fn
+                                       (update-fn zloc)
+                                       zloc)]
+                            (swap! atm conj nloc)
+                            nloc)))
+        @atm)))
 
 (defn root-sexp [zloc]
   (if-let [nloc (z/up zloc)]
     (condp = (z/tag nloc)
-      :forms    zloc
+      :forms   zloc
       :branch? zloc
       (recur nloc))
     zloc))
 
-(->> (juy "src/juy/match.clj" ['defn
-                               'if]
-          )
-     (map root-sexp)
-     (map z/sexpr))
-(mapv (juxt (comp meta z/node)
-            (comp z/sexpr z/node root-sexp)))
+(defn parent-sexp [zloc]
+  (if-let [nloc (z/up zloc)]
+    (condp = (z/tag nloc)
+      :forms   zloc
+      :branch? zloc
+      nloc)
+    zloc))
+
+(comment
+  (>pst)
+
+  [defn :> {:type :vector}]
+
+  (->> (juy "src/juy/match.clj" ['defn] (fn [n]
+                                          (-> n z/down (z/replace 'defn++) z/up)))
+       ;;(map root-sexp)
+       (map z/sexpr))
+
+  (->> (juy "src/juy/match.clj" ['(defn _ ^:+ vector? & _)
+                                 'if])
+       (map root-sexp)
+       (map z/sexpr))
+
+  ((compile-matcher '(defn _ ^:+ vector? & _))
+   (z/of-string "(defn x [])"))
+
+  (>pst)
+  (mapv (juxt (comp meta z/node)
+              (comp z/sexpr z/node root-sexp)))
 
 
-(co
- mment
-  {:order (< 2)
-   :siblings
-   :right {:right string?}}
+  (comment
+   {:order (< 2)
+    :right {:right string?}}
 
-  (def sample
-    (z/of-string
-     "
+   (def sample
+     (z/of-string
+      "
 (do 1 2 3)
-(defn      id        [x] x)
-(defn      id        [x] x)
-(defn lister [x]
-   (list 1 2 3 4 x))"
-     ))
+(defn      id        [a] b)
+(defn      id        [c] d)
+(defn lister [e]
+   (list 1 2 3 4 f))"
+      ))
 
 
-  (matchwalk sample
-             [(compile-matcher  #{'defn 'if})
-              (compile-matcher  {:is number?})]
-             (fn [node]
-               (println (z/sexpr node))
-               node
-               ))
+   (matchwalk sample
+              [(compile-matcher  #{'defn})
+               (compile-matcher  {:right vector?})
+               ]
+              (fn [node]
+                (println (z/sexpr node))
+                node
+                ))
 
-  (prewalk sample
-           (compile-matcher {:is number?})
-           (fn [node]
-             (println (z/sexpr node))
-             node
-             ))
+   (matchlevelwalk sample
+                   [(compile-matcher  #{'defn})]
+                   (fn [node]
+                     (println (z/sexpr node))
+                     node
+                     ))
+
+   (prewalk sample
+            (compile-matcher {:is number?})
+            (fn [node]
+              (println (z/sexpr node))
+              node
+              ))
 
 
-  (prewalk sample
-           (compile-matcher 'defn)
-           (fn [node]
-             (println (z/sexpr node))
-             node
-             ))
-
-  (postwalk sample
+   (prewalk sample
             (compile-matcher 'defn)
             (fn [node]
               (println (z/sexpr node))
               node
               ))
 
-  (defn postwalk
-    [zloc pred? f level direction]
-    (condp = direction
-      :down (if-let [zdown (z/down)]
-              (postwalk zdown pred? f (inc level) :down))))
+   (postwalk sample
+             (compile-matcher 'defn)
+             (fn [node]
+               (println (z/sexpr node))
+               node
+               ))
 
-  (defn postwalk
-    ([zloc f]
-       ())
-    ([zloc p f]))
+   (defn postwalk
+     [zloc pred? f level direction]
+     (condp = direction
+       :down (if-let [zdown (z/down)]
+               (postwalk zdown pred? f (inc level) :down))))
 
+   (defn postwalk
+     ([zloc f]
+        ())
+     ([zloc p f]))
 
-  (comment
 
-    (matchwalk sample
-               [(compile-matcher 'defn)
-                (compile-matcher {:right number?})]
-               (fn [node]
-                 ;;(z/replace node "hello")
-                 (println (z/sexpr node))
-                 node
-                 ))
+   (comment
 
-    (def a (let [atm (atom [])]
-             (-> (postwalk sample
-                           (compile-matcher {:right number?})
-                           (fn [node]
-                             (z/replace node "hello")
-                             ;;(println (z/sexpr node))
-                             ;;node
-                             ))
-                 (z/sexpr))
-             ))
+     (matchwalk sample
+                [(compile-matcher 'defn)
+                 (compile-matcher {:right number?})]
+                (fn [node]
+                  ;;(z/replace node "hello")
+                  (println (z/sexpr node))
+                  node
+                  ))
 
-    (def a (let [atm (atom [])]
-             (-> (postwalk sample
-                           (compile-matcher 'defn)
-                           (fn [node]
-                             (postwalk node
-                                       (compile-matcher {:right number?})
-                                       (fn [node]
-                                         (z/replace node "hello")))))
+     (def a (let [atm (atom [])]
+              (-> (postwalk sample
+                            (compile-matcher {:right number?})
+                            (fn [node]
+                              (z/replace node "hello")
+                              ;;(println (z/sexpr node))
+                              ;;node
+                              ))
+                  (z/sexpr))
+              ))
 
-                 (z/->root-string))))
+     (def a (let [atm (atom [])]
+              (-> (postwalk sample
+                            (compile-matcher 'defn)
+                            (fn [node]
+                              (postwalk node
+                                        (compile-matcher {:right number?})
+                                        (fn [node]
+                                          (z/replace node "hello")))))
 
-    (println a)
+                  (z/->root-string))))
 
-    (let [atm (atom [])]
-      (-> (z/prewalk sample
-                     (?-right (?-right number?))
-                     (fn [x]
-                       (swap! atm conj x)
-                       x)))
-      (map (juxt (comp meta z/node) z/sexpr) @atm))
+     (println a)
 
-    ([{:row 4, :col 5} list] [{:row 4, :col 10} 1] [{:row 4, :col 12} 2])
+     (let [atm (atom [])]
+       (-> (z/prewalk sample
+                      (?-right (?-right number?))
+                      (fn [x]
+                        (swap! atm conj x)
+                        x)))
+       (map (juxt (comp meta z/node) z/sexpr) @atm))
 
-    (let [atm (atom [])]
-      (-> (z/prewalk sample
-                     (?-left (?-left number?))
-                     (fn [x]
-                       (swap! atm conj x)
-                       x)))
-      (map (juxt (comp meta z/node) z/sexpr) @atm))
+     ([{:row 4, :col 5} list] [{:row 4, :col 10} 1] [{:row 4, :col 12} 2])
 
-    (>pst)
+     (let [atm (atom [])]
+       (-> (z/prewalk sample
+                      (?-left (?-left number?))
+                      (fn [x]
+                        (swap! atm conj x)
+                        x)))
+       (map (juxt (comp meta z/node) z/sexpr) @atm))
 
-    => ([{:row 4, :col 5} list] [{:row 4, :col 10} 1] [{:row 4, :col 12} 2] [{:row 4, :col 14} 3])
+     (>pst)
 
+     => ([{:row 4, :col 5} list] [{:row 4, :col 10} 1] [{:row 4, :col 12} 2] [{:row 4, :col 14} 3])
 
-    (let [atm (atom [])]
-      (-> (z/prewalk sample
-                     (?-left number?)
-                     (fn [x]
-                       (swap! atm conj x)
-                       x)))
-      (map (juxt (comp meta z/node) z/sexpr) @atm))
 
-    => ([{:row 4, :col 12} 2] [{:row 4, :col 14} 3] [{:row 4, :col 16} 4]))
+     (let [atm (atom [])]
+       (-> (z/prewalk sample
+                      (?-left number?)
+                      (fn [x]
+                        (swap! atm conj x)
+                        x)))
+       (map (juxt (comp meta z/node) z/sexpr) @atm))
 
+     => ([{:row 4, :col 12} 2] [{:row 4, :col 14} 3] [{:row 4, :col 16} 4]))
 
 
 
@@ -176,153 +209,155 @@
 
 
 
-  (comment
-    (let [atm (atom [])]
-      (-> (z/prewalk sample
-                     (?-is '(defn _ & _))
-                     (fn [x]
-                       (swap! atm conj x)
-                       x)))
-      (map (juxt (comp meta z/node) z/sexpr) @atm))
 
-    (let [atm (atom [])]
-      (-> (z/prewalk sample
-                     (?-right string?)
-                     (fn [x]
-                       (swap! atm conj x)
-                       x)))
-      (map (juxt (comp meta z/node) z/sexpr) @atm))
+   (comment
+     (let [atm (atom [])]
+       (-> (z/prewalk sample
+                      (?-is '(defn _ & _))
+                      (fn [x]
+                        (swap! atm conj x)
+                        x)))
+       (map (juxt (comp meta z/node) z/sexpr) @atm))
 
-    (let [atm (atom [])]
-      (-> (z/prewalk sample
-                     (?-symbol 'defn)
-                     (fn [x]
-                       (swap! atm conj x)
-                       x)))
-      (map (juxt (comp meta z/node) z/->string) @atm))
+     (let [atm (atom [])]
+       (-> (z/prewalk sample
+                      (?-right string?)
+                      (fn [x]
+                        (swap! atm conj x)
+                        x)))
+       (map (juxt (comp meta z/node) z/sexpr) @atm))
 
-    (comment
+     (let [atm (atom [])]
+       (-> (z/prewalk sample
+                      (?-symbol 'defn)
+                      (fn [x]
+                        (swap! atm conj x)
+                        x)))
+       (map (juxt (comp meta z/node) z/->string) @atm))
 
+     (comment
 
 
-      (((quote defn) (quote id) (((quote if) true & _) :seq) & _) :seq)
 
+       (((quote defn) (quote id) (((quote if) true & _) :seq) & _) :seq)
 
-      (list 'let ['x ]
-            (clojure.core.match/clj-form
-             '[x]
-             '[[(((quote defn) (quote id) "oeuoeuo" [1 2 3 4] & _) :seq)] true :else false]))
 
+       (list 'let ['x ]
+             (clojure.core.match/clj-form
+              '[x]
+              '[[(((quote defn) (quote id) "oeuoeuo" [1 2 3 4] & _) :seq)] true :else false]))
 
-      '(defn id & _)
-      => [[(((quote defn) (quote id) & _) :seq)] true :else false]
 
+       '(defn id & _)
+       => [[(((quote defn) (quote id) & _) :seq)] true :else false]
 
-      (z/sexpr (z/of-string (with-out-str (prn '(defn id [x] x)))))
 
+       (z/sexpr (z/of-string (with-out-str (prn '(defn id [x] x)))))
 
-      (def data (z/of-file "../hara/src/hara/common/error.clj"))
 
-      (z/find-value data z/right 'defn)
+       (def data (z/of-file "../hara/src/hara/common/error.clj"))
 
-      (def prj-map (z/find-value data z/next 'defproject))
+       (z/find-value data z/right 'defn)
 
+       (def prj-map (z/find-value data z/next 'defproject))
 
-      (-> sample z/tag)
-      (-> sample z/next z/value)
-      (z/next)
-      (z/next)
-      (z/node)
-      meta
 
-      ($ sample [{:is id
-                  :contains "hello"}])
+       (-> sample z/tag)
+       (-> sample z/next z/value)
+       (z/next)
+       (z/next)
+       (z/node)
+       meta
 
-      ($ sample [{:is   id}])
+       ($ sample [{:is id
+                   :contains "hello"}])
 
+       ($ sample [{:is   id}])
 
-      (defn ?left-of [sym])
 
+       (defn ?left-of [sym])
 
-      (defn ?right-of [sym])
 
-      (-> (z/prewalk sample
-                     (fn [x] (= 'id (z/sexpr x)))
-                     (fn [x] (z/replace x 'hello)))
-          (z/print-root))
+       (defn ?right-of [sym])
 
-      (def pair
-        (let [atm (atom [])]
-          (-> (z/prewalk sample
-                         (symbol-pred 'defn)
-                         (fn [x]
-                           (swap! atm conj x)
-                           x)))
-          @atm))
+       (-> (z/prewalk sample
+                      (fn [x] (= 'id (z/sexpr x)))
+                      (fn [x] (z/replace x 'hello)))
+           (z/print-root))
 
-      (map (juxt (comp meta z/node) z/sexpr) pair)
+       (def pair
+         (let [atm (atom [])]
+           (-> (z/prewalk sample
+                          (symbol-pred 'defn)
+                          (fn [x]
+                            (swap! atm conj x)
+                            x)))
+           @atm))
 
+       (map (juxt (comp meta z/node) z/sexpr) pair)
 
-      (def pair-is
-        (let [atm (atom [])]
-          (-> (z/prewalk sample
-                         (is-pred 'defn)
-                         (fn [x]
-                           (swap! atm conj x)
-                           x)))
-          @atm))
 
-      (map (juxt (comp meta z/node) z/sexpr) pair-is)
+       (def pair-is
+         (let [atm (atom [])]
+           (-> (z/prewalk sample
+                          (is-pred 'defn)
+                          (fn [x]
+                            (swap! atm conj x)
+                            x)))
+           @atm))
 
-      (def data (z/of-string "(1 (2 3))"))
+       (map (juxt (comp meta z/node) z/sexpr) pair-is)
 
-      (-> data
-          (z/next)
-          (z/replace 2)
-          (z/insert-left 1)
-          (z/insert-left  [:whitespace "        "])
-          (z/up)
-          (z/sexpr))
+       (def data (z/of-string "(1 (2 3))"))
 
-      (z/sexpr sample))
+       (-> data
+           (z/next)
+           (z/replace 2)
+           (z/insert-left 1)
+           (z/insert-left  [:whitespace "        "])
+           (z/up)
+           (z/sexpr))
 
-    (z/value sample)
+       (z/sexpr sample))
 
-    (z/node (-> sample z/next z/next ))
+     (z/value sample)
 
-    (z/node (z/right* sample))
+     (z/node (-> sample z/next z/next ))
 
-    (z/sexpr (z/right* (z/right sample)))
+     (z/node (z/right* sample))
 
-    (defn $ [form & ])
+     (z/sexpr (z/right* (z/right sample)))
 
-    (def data '((defn id  [x] x)
-                (defn id2 [x] x)
-                (defn listr [x]
-                  (list 1 2 3 4 x))))
-    (comment
-      ($ data [(defn is ^:data [] ...)
-               {:contains :list}
-               {:value    :vector}
-               hello
-               [{is :whitespace}]])
+     (defn $ [form & ])
 
-      (filter
+     (def data '((defn id  [x] x)
+                 (defn id2 [x] x)
+                 (defn listr [x]
+                   (list 1 2 3 4 x))))
+     (comment
+       ($ data [(defn is ^:data [] ...)
+                {:contains :list}
+                {:value    :vector}
+                hello
+                [{is :whitespace}]])
 
-       {:type      :vector
-        :value     [1 _ 3]
-        :has-child hello
-        :next
-        :prev
-        :sibling   {:type :vector}}
+       (filter
 
+        {:type      :vector
+         :value     [1 _ 3]
+         :has-child hello
+         :next
+         :prev
+         :sibling   {:type :vector}}
 
 
+
+        )
+
+
+       (-> ($ ' [(-> )])
+           (fn [x] 4))
        )
-
-
-      (-> ($ ' [(-> )])
-          (fn [x] 4))
-      )
-    )
+     )
+   )
 )
