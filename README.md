@@ -4,7 +4,10 @@ Manipulate source code like the DOM
 
 ## Usage
 
-FIXME
+`juy` combines two very useful libraries - [rewrite-clj] and [core.match] to birth a jquery/xpath - inspired dsl for source code manipulation.
+
+is an amazing library for source code manipulation. But zipper traversal is a very difficult way to control. 
+Declarative code traversals are still the best for 
 
 ## License
 

@@ -1,129 +1,39 @@
 (ns juy.core
   (:require [rewrite-clj.zip :as z]
-            [rewrite-clj.printer :as p]
-            [hara.common.checks :refer [hash-map?]]
-            [juy.match :refer [match-template]]))
+            [juy.walk :refer [matchwalk postwalk prewalk]]
+            [juy.match :refer [compile-matcher]]))
 
-(defrecord Matcher [fn]
-  clojure.lang.IFn
-  (invoke [this node]
-    ((:fn this) node)))
+(defn juy [f templates]
+  (let [zloc (z/of-file f)
+        atm  (atom [])]
+    (matchwalk zloc
+               (map compile-matcher templates)
+               (fn [zloc]
+                 (println (meta (z/node zloc)))
+                 (swap! atm conj zloc)))
+    @atm))
 
-(defn matcher? [x]
-  (instance? Matcher x))
+(defn root-sexp [zloc]
+  (if-let [nloc (z/up zloc)]
+    (condp = (z/tag nloc)
+      :forms    zloc
+      :branch? zloc
+      (recur nloc))
+    zloc))
 
-(defn matches? [node template]
-  (cond (fn? template) (template (z/sexpr node))
-        (matcher? template) ((:fn template) node)
-        (coll? template) (match-template (z/sexpr node))
-        :else (= template (z/sexpr node))))
-
-(defn p-symbol [template]
-  (Matcher. (fn [node]
-              (and (-> node z/tag (= :list))
-                   (-> node z/down z/value (= template))))))
-
-(defn p-type [template]
-  (Matcher. (fn [node]
-              (-> node z/tag (= template)))))
-
-(defn p-is [template]
-  (Matcher. (fn [node]
-              (-> node (matches? template)))))
-
-(defn p-left [template]
-  (Matcher. (fn [node]
-              (if node
-                (-> node z/left (matches? template))))))
-
-(defn p-right [template]
-  (Matcher. (fn [node]
-              (if node
-                (-> node z/right (matches? template))))))
-
-(defn p-contains [template]
-  (Matcher. (fn [node]
-              (if-let [chd (z/down node)]
-                (->> chd
-                     (iterate z/right)
-                     (take-while identity)
-                     (map #(matches? % template))
-                     (some identity))))))
-
-(defn p-and [& matchers]
-  (Matcher. (fn [node]
-              (->> (map #(%  node)  matchers)
-                   (every? true? )))))
-
-(defn p-or [& matchers]
-  (Matcher. (fn [node]
-              (->> (map #(%  node)  matchers)
-                   (some true? )))))
+(->> (juy "src/juy/match.clj" ['defn
+                               'if]
+          )
+     (map root-sexp)
+     (map z/sexpr))
+(mapv (juxt (comp meta z/node)
+            (comp z/sexpr z/node root-sexp)))
 
 
-(defn compile-matcher [template]
-  (cond (symbol? template)   (p-symbol template)
-        (list? template)     (p-is template)
-        (hash-map? template)
-        (apply p-and
-               (map (fn [[k v]]
-                      (condp = k
-                        :type  (p-type v)
-                        :is    (p-is v)
-                        :right (p-right v)
-                        :left  (p-left v)
-                        :contains (p-contains v)))
-                    template))))
-
-(defn prewalk
-  [zloc m f]
-  (let [nloc  (if (m zloc)
-                (f zloc)
-                zloc)
-        nloc  (if-let [zdown (z/down nloc)]
-                (z/up (prewalk zdown m f))
-                nloc)
-        nloc  (if-let [zright (z/right nloc)]
-                (z/left (prewalk zright m f))
-                nloc)]
-    nloc))
-
-(defn postwalk
-  [zloc m f]
-  (let [nloc  (if-let [zdown (z/down zloc)]
-                (z/up (postwalk zdown m f))
-                zloc)
-        nloc  (if-let [zright (z/right nloc)]
-                (z/left (postwalk zright m f))
-                nloc)
-        nloc  (if (m nloc)
-                (f nloc)
-                nloc)]
-    nloc))
-
-(defn matchwalk
-  [zloc [m & more :as matchers] f]
-  (let [nloc (if (m zloc)
-               (cond (empty? more)
-                     (f zloc)
-
-                     (z/down zloc)
-                     (z/up (matchwalk (z/down zloc) more f))
-
-                     :else
-                     zloc)
-               zloc)
-        nloc  (if-let [zdown (z/down zloc)]
-                (z/up (matchwalk zdown matchers f))
-                zloc)
-        nloc  (if-let [zright (z/right nloc)]
-                (z/left (matchwalk zright matchers f))
-                nloc)]
-    nloc))
-
-
-(comment
+(co
+ mment
   {:order (< 2)
+   :siblings
    :right {:right string?}}
 
   (def sample
@@ -138,7 +48,7 @@
 
 
   (matchwalk sample
-             [(compile-matcher  'defn)
+             [(compile-matcher  #{'defn 'if})
               (compile-matcher  {:is number?})]
              (fn [node]
                (println (z/sexpr node))

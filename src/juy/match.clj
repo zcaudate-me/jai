@@ -1,61 +1,75 @@
 (ns juy.match
-  (:require  [hara.common.checks :refer [hash-map?]]
-             [clojure.core.match :refer [clj-form]]))
+  (:require [rewrite-clj.zip :as z]
+            [hara.common.checks :refer [hash-map?]]
+            [juy.match.template :refer [match-template]]))
+            
+(defrecord Matcher [fn]
+  clojure.lang.IFn
+  (invoke [this node]
+    ((:fn this) node)))
 
-(defn transform-match [template]
-  (cond (list? template)      (list (apply list (map transform-match template)) :seq)
-        (:+ (meta template))  (eval template)
-        (:- (meta template))  template
-        ('#{& _} template)    template
-        (vector? template)    (vec (map transform-match template))
-        (set? template)       (set (map transform-match template))
-        (hash-map? template)  (->> (map (fn [[k v]]
-                                      [(transform-match k) (transform-match v)]) template)
-                               (into {}))
-        (symbol? template)    (list 'quote template)
-        :else template))
+(defn matcher? [x]
+  (instance? Matcher x))
 
-(defrecord FnPattern [fn])
+(defn matches? [node template]
+  (cond (fn? template) (template (z/sexpr node))
+        (matcher? template) ((:fn template) node)
+        (coll? template) (match-template (z/sexpr node))
+        :else (= template (z/sexpr node))))
 
-(defmethod clojure.core.match/emit-pattern clojure.lang.Fn
-  [pat]
-  (FnPattern. pat))
+(defn p-symbol [template]
+  (Matcher. (fn [node]
+              (and (-> node z/tag (= :list))
+                   (-> node z/down z/value (= template))))))
 
-(defmethod clojure.core.match/to-source FnPattern
-  [pat ocr]
-  `(~(:fn pat) ~ocr))
+(defn p-type [template]
+  (Matcher. (fn [node]
+              (-> node z/tag (= template)))))
 
-(defmethod clojure.core.match/groupable? [FnPattern FnPattern]
-  [a b]
-  (let [ra (:fn a)
-        rb (:fn b)]
-    (and (= (.pattern ra) (.pattern rb))
-         (= (.flags ra) (.flags rb)))))
+(defn p-is [template]
+  (Matcher. (fn [node]
+              (-> node (matches? template)))))
 
-(defrecord RegexPattern [regex])
+(defn p-left [template]
+  (Matcher. (fn [node]
+              (if node
+                (-> node z/left (matches? template))))))
 
-(defmethod clojure.core.match/emit-pattern java.util.regex.Pattern
-  [pat]
-  (RegexPattern. pat))
+(defn p-right [template]
+  (Matcher. (fn [node]
+              (if node
+                (-> node z/right (matches? template))))))
 
-(defmethod clojure.core.match/to-source RegexPattern
-  [pat ocr]
-  `(re-find ~(:regex pat) ~ocr))
+(defn p-contains [template]
+  (Matcher. (fn [node]
+              (if-let [chd (z/down node)]
+                (->> chd
+                     (iterate z/right)
+                     (take-while identity)
+                     (map #(matches? % template))
+                     (some identity))))))
 
-(defmethod clojure.core.match/groupable? [RegexPattern RegexPattern]
-  [a b]
-  (let [ra (:regex a)
-        rb (:regex b)]
-    (and (= (.pattern ra) (.pattern rb))
-         (= (.flags ra) (.flags rb)))))
+(defn p-and [& matchers]
+  (Matcher. (fn [node]
+              (->> (map #(%  node)  matchers)
+                   (every? true? )))))
 
-(defn match-clauses [template]
-  [[(transform-match template)] true :else false])
+(defn p-or [& matchers]
+  (Matcher. (fn [node]
+              (->> (map #(%  node)  matchers)
+                   (some true? )))))
 
-(defn match-template [form template]
-  (let [clauses (match-clauses template)
-        sym   (gensym)
-        match-form (clojure.core.match/clj-form [sym] clauses)
-        all    (list 'let [sym (list 'quote form)]
-                     match-form)]
-    (eval all)))
+
+(defn compile-matcher [template]
+  (cond (symbol? template)   (p-symbol template)
+        (list? template)     (p-is template)
+        (hash-map? template)
+        (apply p-and
+               (map (fn [[k v]]
+                      (condp = k
+                        :type  (p-type v)
+                        :is    (p-is v)
+                        :right (p-right v)
+                        :left  (p-left v)
+                        :contains (p-contains v)))
+                    template))))
