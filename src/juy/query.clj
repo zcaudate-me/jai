@@ -1,8 +1,7 @@
 (ns juy.query
   (:require [rewrite-clj.zip :as z]
             [juy.query.walk :refer [matchwalk postwalk prewalk levelwalk]]
-            [juy.query.compile :refer [compile-matcher]]))
-
+            [juy.query.match :refer [compile-matcher]]))
 
 (defn $ [])
 
@@ -44,11 +43,16 @@
       nloc)
     zloc))
 
+($ "src/juy/query/match.clj"
+   [defmethod :> ]
+   )
+
+
 (->> (juy "src/juy/query/match.clj" ['(defmethod _ [_ _] & _)
-                                     {:left #{symbol?}
-                                      :is   vector?}
+                                     #{vector? symbol?}
                                      ])
-     (map root-sexp)
+     ;;(map root-sexp)
+
      (map z/sexpr))
 (comment
 

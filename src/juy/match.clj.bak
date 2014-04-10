@@ -76,7 +76,7 @@
                (map (fn [[k v]]
                       (condp = k
                         :type     (p-type v)
-                        :matches  (p-matches v)
+                        :pattern  (p-matches v)
                         :is       (p-is v)
                         :right    (p-right v)
                         :left     (p-left v)
