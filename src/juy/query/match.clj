@@ -1,4 +1,4 @@
-(ns juy.match.template
+(ns juy.query.match
   (:require  [hara.common.checks :refer [hash-map?]]
              [clojure.core.match :refer [clj-form]]))
 

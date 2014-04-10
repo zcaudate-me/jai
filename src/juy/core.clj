@@ -44,6 +44,10 @@
   :insert
   :delete
 
+  [:tag {:attr 1}
+   [:tag {:attr 1}]
+   [:tag {:attr 2}]]
+
   [:right 2 :delete 1 :]
 
   [:replace-code "\n   (1 2 3 4)  \n"]
@@ -52,9 +56,12 @@
   :insert [1 "   code    "] :code
   :insert [1 "   code    "]
 
-  (->> (juy "src/juy/match.clj" ['defn 'if]
-            ;;[:top-level :up 1 :update (fn [sym] (symbol "+" sym)) :replace 'defn :move 2 :delete 1]
-            #_(fn [n]
+  (->> (juy "src/juy/match.clj" [#_{:is    '(defn & _)
+                                  :child 'if}
+                                 'defn ;;:> 'if
+                                 {:is 'defn}]
+            [:top-level :up 1 :update (fn [sym] (symbol "+" sym)) :replace 'defn :move 2 :delete 1]
+            (fn [n]
               (-> n (z/replace 'defn++))))
        (map root-sexp)
        (map z/sexpr))

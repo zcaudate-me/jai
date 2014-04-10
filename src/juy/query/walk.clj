@@ -1,4 +1,4 @@
-(ns juy.walk
+(ns juy.query.walk
   (:require [rewrite-clj.zip :as z]))
 
 (defn prewalk
