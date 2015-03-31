@@ -43,17 +43,10 @@
       nloc)
     zloc))
 
-#_($ "src/juy/query/match.clj"
+($ "src/juy/query/match.clj"
    [defmethod :> ]
    )
 
-
-(->> (juy "src/juy/query/match.clj" ['(defmethod _ [_ _] & _)
-                                     #{vector? symbol?}
-                                     ])
-     ;;(map root-sexp)
-
-     (map z/sexpr))
 
 (->> (juy "src/juy/query/match.clj" ['(defmethod _ [_ _] & _)
                                      #{vector? symbol?}

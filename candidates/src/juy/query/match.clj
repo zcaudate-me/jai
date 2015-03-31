@@ -26,50 +26,9 @@
                 (-> zloc z/sexpr template)
                 (-> zloc z/sexpr (= template))))))
 
-(defn p-equal-loop [expr template]
-  (and (= (meta expr) (meta template))
-       (= (type expr) (type template))
-       (cond (or (list? expr) (vector? expr))
-             (and (= (count expr) (count template))
-                  (every? true? (map p-equal-loop expr template)))
-
-             (set? expr)
-             (and (= (count expr) (count template))
-                  (every? true? (map p-equal-loop
-                                     (sort expr)
-                                     (sort template))))
-
-             (map? expr)
-             (and (= (count expr) (count template))
-                  (every? true? (map p-equal-loop
-                                     (sort (keys expr))
-                                     (sort (keys template))))
-                  (every? true? (map p-equal-loop
-                                     (map #(get expr %) (keys expr))
-                                     (map #(get template %) (keys expr)))))
-
-             :else (= expr template))))
-
-(defn p-equal
-  [template]
-  (Matcher. (fn [zloc]
-              (let [expr (z/sexpr zloc)]
-                (p-equal-loop expr template)))))
-
-(defn p-meta [template]
-  (Matcher. (fn [zloc]
-              (-> zloc z/sexpr meta (= template)))))
-
-(defn check-with-meta [f]
-  (fn [zloc]
-    (if (-> zloc z/tag (= :meta))
-      (f (-> zloc z/down z/right))
-      (f zloc))))
-
 (defn p-type [template]
-  (Matcher. (check-with-meta
-             (fn [zloc]
-               (-> zloc z/tag (= template))))))
+  (Matcher. (fn [zloc]
+              (-> zloc z/tag (= template)))))
 
 (defn p-form [template]
   (Matcher. (fn [zloc]
@@ -85,8 +44,7 @@
   [template]
   (Matcher. (fn [zloc]
               (cond (regex? template)
-                    (if (->> zloc z/->string (re-find template))
-                      true false)))))
+                    (-> zloc z/->string (re-find template))))))
 
 (defn p-and [& matchers]
   (Matcher. (fn [zloc]
@@ -115,9 +73,7 @@
                       (condp = k
                         :fn       (p-fn v)
                         :is       (p-is v)
-                        :equal    (p-equal v)
                         :type     (p-type v)
-                        :meta     (p-type v)
                         :form     (p-form v)
                         :pattern  (p-pattern v)
                         :code     (p-code v)
@@ -128,7 +84,8 @@
                         :contains (p-contains v)
                         :sibling  (p-sibling v)
                         :right    (p-right v)
-                        :left     (p-left v)))
+                        :left     (p-left v)
+                        ))
                     template))))
 
 (defn p-parent [template]
@@ -154,9 +111,7 @@
                        (iterate z/right)
                        (take-while identity)
                        (map m-fn)
-                       (some identity)
-                       nil? not)
-                  false)))))
+                       (some identity)))))))
 
 (defn tree-search
   ([zloc m-fn dir1 dir2]
@@ -174,7 +129,7 @@
                 (-> zloc (z/down) (tree-search m-fn z/right z/down))))))
 
 (defn p-ancestor [template]
-  (let [template (if (symbol? template) {:form template} template)
+  (let [template (if (symbol? template) {:is template} template)
         m-fn (compile-matcher template)]
     (Matcher. (fn [zloc]
                 (-> zloc (z/up) (tree-search m-fn z/up (fn [_])))))))
@@ -197,6 +152,4 @@
   (let [template (if (symbol? template) {:is template} template)
         m-fn (compile-matcher template)]
     (Matcher. (fn [zloc]
-                (or (-> zloc z/right (tree-search m-fn z/right (fn [_])))
-                    (-> zloc z/left  (tree-search m-fn z/left (fn [_])))
-                    false)))))
+                (-> zloc (z/up) (z/down) (tree-search m-fn z/right (fn [_])))))))

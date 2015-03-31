@@ -1,66 +1,75 @@
 (ns juy.query.pattern
   (:require  [hara.common.checks :refer [hash-map?]]
-             [clojure.core.match :refer [clj-form]]))
+             [juy.query.pattern regex fn]
+             [clojure.core.match :as match]
+             [clojure.walk :as walk]))
+
+(defn lazy-seq? [x] (instance? clojure.lang.LazySeq x))
 
 (defn transform-pattern [template]
-  (cond (list? template)      (list (apply list (map transform-pattern template)) :seq)
-        (:+ (meta template))  (eval template)
-        (:- (meta template))  template
-        ('#{& _} template)    template
-        (vector? template)    (vec (map transform-pattern template))
-        (set? template)       (set (map transform-pattern template))
+  (cond (#{'(quote &)
+           '(quote _)} template)    template
+        (or (lazy-seq? template)
+            (list? template))      (list (apply list (map transform-pattern template)) :seq)
+        (:% (meta template))       (eval template)
+        (#{'& '_} template)        template
+        (vector? template)         (vec (map transform-pattern template))
+        (set? template)            (set (map transform-pattern template))
         (hash-map? template)  (->> (map (fn [[k v]]
                                       [(transform-pattern k) (transform-pattern v)]) template)
                                (into {}))
         (symbol? template)    (list 'quote template)
         :else template))
 
-(defrecord FnPattern [fn])
+(defn pattern-form
+  [sym template]
+  (let [clauses [[(transform-pattern template)] true :else false]]
+    (match/clj-form [sym] clauses)))
 
-(defmethod clojure.core.match/emit-pattern clojure.lang.Fn
-  [pat]
-  (FnPattern. pat))
-
-(defmethod clojure.core.match/to-source FnPattern
-  [pat ocr]
-  `(~(:fn pat) ~ocr))
-
-(defmethod clojure.core.match/groupable? [FnPattern FnPattern]
-  [a b]
-  (let [ra (:fn a)
-        rb (:fn b)]
-    (and (= (.pattern ra) (.pattern rb))
-         (= (.flags ra) (.flags rb)))))
-
-(defrecord RegexPattern [regex])
-
-(defmethod clojure.core.match/emit-pattern java.util.regex.Pattern
-  [pat]
-  (RegexPattern. pat))
-
-(defmethod clojure.core.match/to-source RegexPattern
-  [pat ocr]
-  `(re-find ~(:regex pat) ~ocr))
-
-(defmethod clojure.core.match/groupable? [RegexPattern RegexPattern]
-  [a b]
-  (let [ra (:regex a)
-        rb (:regex b)]
-    (and (= (.pattern ra) (.pattern rb))
-         (= (.flags ra) (.flags rb)))))
-
-(defn pattern-clauses [template]
-  [[(transform-pattern template)] true :else false])
-
-(defn pattern-fn [template]
-  (let [clauses (pattern-clauses template)
-        sym   (gensym)
-        match-form (clojure.core.match/clj-form [sym] clauses)
+(defn pattern-single-fn [template]
+  (let [sym        (gensym)
+        match-form (pattern-form sym template)
         all-fn    `(fn [form#]
                      (let [~sym form#]
                        ~match-form))]
     (eval all-fn)))
 
-(comment
-  ((match-fn '(defn & _)) '(defn x []))
-  )
+(defn- expand-meta
+  [ele out]
+  (let [mele (meta ele)]
+    (cond (:%? mele)
+          (expand-meta (with-meta ele (-> (dissoc mele :%?)
+                                          (assoc :% true :? true)))
+                       out)
+          (:? mele)
+          (do (swap! out update-in [:?] inc)
+              (with-meta ele (assoc mele :? (:? @out))))
+
+          :else ele)))
+
+(defn- remove-element [ele combo]
+  (if-let [num (-> ele meta :?)]
+    (if (-> combo (bit-shift-right num) (mod 2) (= 0))
+      ::null
+      ele)
+    ele))
+
+(defn- remove-nulls [ele]
+  (cond (list? ele) (filter #(not= ::null %) ele)
+        (vector? ele) (filterv #(not= ::null %) ele)
+        :else ele))
+
+(defn pattern-seq [template]
+  (let [out      (atom {:? -1})
+        template (walk/postwalk #(expand-meta % out) template)
+        combos   (range (bit-shift-left 1 (inc (:? @out))))]
+    (for [combo combos]
+      (->> template
+           (walk/postwalk #(remove-element % combo))
+           (walk/prewalk remove-nulls)))))
+
+(defn pattern-fn [template]
+  (let [all-fns (mapv pattern-single-fn (distinct (pattern-seq template)))]
+    (fn [form]
+      (or (some #(% form) all-fns)
+          false))))
