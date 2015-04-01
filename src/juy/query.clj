@@ -1,31 +1,28 @@
 (ns juy.query
   (:require [rewrite-clj.zip :as z]
-            [juy.query.walk :refer [matchwalk postwalk prewalk levelwalk]]
-            [juy.query.match :refer [compile-matcher]]))
+            [juy.query.walk  :as walk]
+            [juy.query.match :as match]
+            [juy.query.path :as path]))
 
-(defn $ [])
+(defn select [zloc path]
+  (let [atm  (atom [])]
+    (walk/matchwalk zloc
+                    [(-> path
+                         (path/compile-path)
+                         (match/compile-matcher))]
+                    (fn [zloc]
+                      (swap! atm conj zloc)
+                      zloc))
+    @atm))
 
-(defn $ [])
-
-(defn $* [])
-
-(defn juy
-  ([context templates & [update-fn? & modifiers]]
-     (let [zloc (z/of-file context)
-           [update-fn modifiers]
-           (if (fn? update-fn?)
-             [update-fn? modifiers]
-             [nil modifiers])
-           atm  (atom [])]
-        (levelwalk zloc
-                        (map compile-matcher templates)
-                        (fn [zloc]
-                          (let [nloc (if update-fn
-                                       (update-fn zloc)
-                                       zloc)]
-                            (swap! atm conj nloc)
-                            nloc)))
-        @atm)))
+(defn modify [zloc path func & args]
+  (walk/matchwalk zloc
+                  [(-> path
+                       (path/compile-path)
+                       (match/compile-matcher))]
+                  
+                  (fn [zloc]
+                    (apply func zloc args))))
 
 (defn root-sexp [zloc]
   (if-let [nloc (z/up zloc)]
@@ -43,25 +40,40 @@
       nloc)
     zloc))
 
-#_($ "src/juy/query/match.clj"
-   [defmethod :> ]
-   )
-
-
-(->> (juy "src/juy/query/match.clj" ['(defmethod _ [_ _] & _)
-                                     #{vector? symbol?}
-                                     ])
-     ;;(map root-sexp)
-
-     (map z/sexpr))
-
-(->> (juy "src/juy/query/match.clj" ['(defmethod _ [_ _] & _)
-                                     #{vector? symbol?}
-                                     ])
-     ;;(map root-sexp)
-
-     (map z/sexpr))
 (comment
+  #_($ "src/juy/query/match.clj"
+       [defmethod :> ]
+       )
+
+
+  (->> (juy "src/juy/query/pattern/fn.clj" [{:form 'catch
+                                             :ancestor 'defmethod}])
+       
+
+       (map z/sexpr))
+
+  (->> (juy "src/juy/query/pattern/fn.clj" ['(defmethod _ [_ _] & _)
+                                            
+                                            ])
+       ;;(map root-sexp)
+
+       (map z/sexpr))
+
+  (->> (juy "src/juy/query/pattern/fn.clj" ['(defmethod & _)
+                                            list?
+                                            ])
+       ;;(map root-sexp)
+
+       (map z/sexpr))
+
+  (->> (juy "src/juy/query/match.clj" ['(defmethod _ [_ _] & _)
+                                       #{vector? symbol?}
+                                       ])
+       ;;(map root-sexp)
+
+       (map z/sexpr))
+  (comment
 
 
     (>pst))
+  )

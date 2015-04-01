@@ -136,7 +136,9 @@
         m-fn (compile-matcher template)]
     (Matcher. (fn [zloc]
                (if-let [parent (z/up zloc)]
-                 (m-fn parent))))))
+                 (and (not= (z/sexpr zloc)
+                            (z/sexpr parent))
+                      (m-fn parent)))))))
 
 (defn p-first [template]
   (let [template (if (symbol? template) {:is template} template)

@@ -3,4 +3,6 @@
 (comment
 
   [:> 'defn :| :> list]
+  
+  [defn * | list?]
   )
