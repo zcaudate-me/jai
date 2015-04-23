@@ -3,23 +3,29 @@
   (:require [juy.query.match :refer :all]
             [rewrite-clj.zip :as z]))
 
-(fact "p-fn"
+^{:refer juy.query.match/p-fn :added "0.1"}
+(fact "takes a predicate function to check the state of the zipper"
   ((p-fn (fn [x]
            (-> (z/node x) (.tag) (= :token))))
    (z/of-string "defn"))
   => true)
 
-(fact "p-is"
+^{:refer juy.query.match/p-is :added "0.1"}
+(fact "checks if node is equivalent, does not meta into account"
   ((p-is 'defn) (z/of-string "defn"))
   => true
 
+  ((p-is '^{:a 1} defn) (z/of-string "defn"))
+  => true
+  
   ((p-is 'defn) (z/of-string "is"))
   => false
 
   ((p-is '(defn & _)) (z/of-string "(defn x [])"))
   => false)
 
-(fact "p-equal"
+^{:refer juy.query.match/p-equal :added "0.1"}
+(fact "checks if the node is equivalent, takes meta into account"
   ((p-equal '^{:a 1} defn) (z/of-string "defn"))
   => false
 
@@ -29,35 +35,45 @@
   ((p-equal '^{:a 1} defn) (z/of-string "^{:a 2} defn"))
   => false)
 
-(fact "p-meta"
+^{:refer juy.query.match/p-meta :added "0.1"}
+(fact "checks if meta is the same"
   ((p-meta {:a 1}) (z/of-string "^{:a 1} defn"))
   => true
   
   ((p-meta {:a 1}) (z/of-string "^{:a 2} defn"))
   => false)
 
-(fact "p-type"
+^{:refer juy.query.match/p-type :added "0.1"}
+(fact "check on the type of element"
   ((p-type :token) (z/of-string "defn"))
   => true
   
   ((p-type :token) (z/of-string "^{:a 1} defn"))
   => true)
 
-(fact "p-form"
+^{:refer juy.query.match/p-form :added "0.1"}
+(fact "checks if it is a form with the symbol as the first element"
   ((p-form 'defn) (z/of-string "(defn x [])"))
   => true
   ((p-form 'let) (z/of-string "(let [])"))
   => true)
 
-(fact "p-pattern"
+^{:refer juy.query.match/p-pattern :added "0.1"}
+(fact "checks if the form matches a particular pattern"
   ((p-pattern '(defn ^:% symbol? & _)) (z/of-string "(defn ^{:a 1} x [])"))
-  => true)
+  => true
 
-(fact "p-code"
+  ((p-pattern '(defn ^:% symbol? ^:%? string? [])) (z/of-string "(defn ^{:a 1} x [])"))
+  => true
+  )
+
+^{:refer juy.query.match/p-code :added "0.1"}
+(fact "checks if the form matches a string in the form of a regex expression"
   ((p-code #"defn") (z/of-string "(defn ^{:a 1} x [])"))
   => true)
 
-(fact "p-and"
+^{:refer juy.query.match/p-and :added "0.1"}
+(fact "takes multiple predicates and ensures that all are correct"
   ((p-and (p-code #"defn")
           (p-type :token)) (z/of-string "(defn ^{:a 1} x [])"))
   => false
@@ -66,8 +82,8 @@
           (p-type :list)) (z/of-string "(defn ^{:a 1} x [])"))
   => true)
 
-
-(fact "p-or"
+^{:refer juy.query.match/p-or :added "0.1"}
+(fact "takes multiple predicates and ensures that at least one is correct"
   ((p-or (p-code #"defn")
           (p-type :token)) (z/of-string "(defn ^{:a 1} x [])"))
   => true
@@ -76,7 +92,8 @@
           (p-type :list)) (z/of-string "(defn ^{:a 1} x [])"))
   => true)
 
-(fact "p-parent"
+^{:refer juy.query.match/p-parent :added "0.1"}
+(fact "checks that the parent of the element contains a certain characteristic"
   ((p-parent 'defn) (-> (z/of-string "(defn x [])") z/next z/next))
   => true
 
@@ -86,7 +103,8 @@
   ((p-parent {:parent 'if}) (-> (z/of-string "(if (= x y))") z/down))
   => false)
 
-(fact "p-first"
+^{:refer juy.query.match/p-first :added "0.1"}
+(fact "checks that the first element of the container has a certain characteristic"
   ((p-first 'defn) (-> (z/of-string "(defn x [])")))
   => true
   
@@ -96,41 +114,47 @@
   ((p-first 'x) (-> (z/of-string "[y z]")))
   => false)
 
-(fact "p-child"
+^{:refer juy.query.match/p-child :added "0.1"}
+(fact "checks that there is a child of a container that has a certain characteristic"
   ((p-child {:form '=}) (z/of-string "(if (= x y))"))
   => true
 
   ((p-child '=) (z/of-string "(if (= x y))"))
   => false)
 
-(fact "p-contains"
+^{:refer juy.query.match/p-contains :added "0.1"}
+(fact "checks that any element (deeply nested also) of the container matches"
   ((p-contains '=) (z/of-string "(if (= x y))"))
   => true
 
   ((p-contains 'x) (z/of-string "(if (= x y))"))
   => true)
 
-(fact "p-ancestor"
+^{:refer juy.query.match/p-ancestor :added "0.1"}
+(fact "checks that any parent container matches"
   ((p-ancestor {:form 'if}) (-> (z/of-string "(if (= x y))") z/down z/next z/next))
   => true
   ((p-ancestor 'if) (-> (z/of-string "(if (= x y))") z/down z/next z/next))
   => true)
 
-(fact "p-left"
+^{:refer juy.query.match/p-left :added "0.1"}
+(fact "checks that the element on the left has a certain characteristic"
   ((p-left '=) (-> (z/of-string "(if (= x y))") z/down z/next z/next z/next))
   => true
   
   ((p-left 'if) (-> (z/of-string "(if (= x y))") z/down z/next))
   => true)
 
-(fact "p-right"
+^{:refer juy.query.match/p-right :added "0.1"}
+(fact "checks that the element on the right has a certain characteristic"
   ((p-right 'x) (-> (z/of-string "(if (= x y))") z/down z/next z/next))
   => true
   
   ((p-right {:form '=}) (-> (z/of-string "(if (= x y))") z/down))
   => true)
 
-(fact "p-sibling"
+^{:refer juy.query.match/p-sibling :added "0.1"}
+(fact "checks that any element on the same level has a certain characteristic"
   ((p-sibling '=) (-> (z/of-string "(if (= x y))") z/down z/next z/next))
   => false
   

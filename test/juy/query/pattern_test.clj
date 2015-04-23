@@ -2,8 +2,8 @@
   (:use midje.sweet)
   (:require [juy.query.pattern :refer :all]))
 
-
-(fact "transform pattern"
+^{:refer juy.query.pattern/transform-pattern :added "0.1"}
+(fact "turns a juy pattern into a core.match pattern"
   (transform-pattern 'def)
   => '(quote def)
   
@@ -16,13 +16,15 @@
   (transform-pattern ''&)
   => '(quote &)
 
+  
   (transform-pattern '&)
   => '&
 
   (transform-pattern '{^:% symbol? 1})
   => {symbol? 1})
 
-(fact "Match regex"
+^{:refer juy.query.pattern/pattern-fn-regex :added "0.1"}
+(fact "pattern matching for regex"
   ((pattern-fn #"w.*") "world")
   => true
 
@@ -32,14 +34,16 @@
   ((pattern-fn #"h") #"h")
   => true)
 
-(fact "Match Functions" 
+^{:refer juy.query.pattern/pattern-fn-pred :added "0.1"}
+(fact "pattern matching for predicates" 
   ((pattern-fn string?) "hello")
   => true
 
   ((pattern-fn number?) "world")
   => false)
 
-(fact "Match Datastructures"
+^{:refer juy.query.pattern/pattern-fn-coll :added "0.1"}
+(fact "pattern matching for collections"
   
   ((pattern-fn [1 2 3]) [1 2 3])
   => true
@@ -50,7 +54,8 @@
   ((pattern-fn {:a string?}) {:a "Hello"})
   => true)
 
-(fact "Match ^:%"
+^{:refer juy.query.pattern/pattern-fn-% :added "0.1"}
+(fact "pattern matching for :% modifier"
   ((pattern-fn 'symbol?) 'symbol?)
   => true
 
@@ -66,7 +71,8 @@
   ((pattern-fn '(defn ^:% symbol? ^:% empty?)) '(defn y []))
   => true)
 
-(fact "Match & and _"
+^{:refer juy.query.pattern/pattern-fn-args :added "0.1"}
+(fact "pattern amtching for '&' and '_' symbols"
   ((pattern-fn '(defn _ '[& _])) '(defn hello [& _]))
   => false
 
@@ -91,7 +97,8 @@
   ((pattern-fn '(defn _ [& _])) '(defn hello [x y z]))
   => true)
 
-(fact "Match fn"
+^{:refer juy.query.pattern/pattern-fn-match :added "0.1"}
+(fact "pattern matching for core.match types"
   
   ((pattern-fn '(defn & _)) '(defn x []))
   => true
@@ -105,7 +112,8 @@
   ((pattern-fn ''&) '1)
   => false)
 
-(fact "Optional matches"
+^{:refer juy.query.pattern/pattern-fn-optional :added "0.1"}
+(fact "pattern matching for optional types"
   (map (pattern-fn '(defn ^:% symbol? ^:%? string? ^:%? map? ^:% vector? & _))
        '[(defn x [])
          (defn x {} [])
@@ -114,7 +122,6 @@
          (defn x "" {} [] (inc 1))
          (defn x [] (inc 1))])
   => [true true true true true true])
-
 
 (comment
   (pattern-form 'a '1)

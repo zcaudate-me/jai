@@ -4,14 +4,33 @@
             [juy.query.match :as match]
             [juy.query.walk :as walk]))
 
-(defn find-cursor-index [path]
+(defn find-cursor-index
+  "finds the :| keyword in a vector
+  (find-cursor-index [])
+  => -1
+
+  (find-cursor-index '[try])
+  => -1
+
+  (find-cursor-index '[try :|])
+  => 1"
+  {:added "0.1"} 
+  [path]
   (let [cursors (keep-indexed (fn [i e] (if (= e :|) i)) path)]
     (case (count cursors)
         0 -1
         1 (first cursors)
-        (throw (ex-info "There should only be one `:|` in the path:" {:path path
-                                                                      :cursors cursors})))))
+        (throw (ex-info "There should only be one `:|` in the path:" 
+                        {:path path :cursors cursors})))))
+
 (defn group-items
+  "groups 
+  (group-items '[try if])
+  => '[[:> try] [:> if]]
+  
+  (group-items '[try :* if])
+  => '[[:* try] [:> if]]"
+  {:added "0.1"}
   ([path] (group-items path []))
   ([[x y & xs :as more] out]
    (cond (empty? more) out
@@ -55,7 +74,24 @@
                     m
                     {k m}))))))
 
-(defn compile-path [path]
+(defn compile-path
+  "compiles the path for search
+  (compile-path '[try])
+  => '{:form try}
+
+  (compile-path '[try :|])
+  => '{:parent {:form try}}
+
+  (compile-path '[try :* hello])
+  => '{:contains {:form hello}, :form try}
+
+  (compile-path '[try :| :* hello])
+  => '{:contains {:form hello}, :parent {:form try}}
+
+  (compile-path '[try :* :| hello])
+  => '{:form hello, :ancestor {:form try}}"
+  {:added "0.1"} 
+  [path]
   (let [idx (find-cursor-index path)
         len (count path)
         [before after] (if (= idx -1)

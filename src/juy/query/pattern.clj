@@ -6,7 +6,28 @@
 
 (defn lazy-seq? [x] (instance? clojure.lang.LazySeq x))
 
-(defn transform-pattern [template]
+(defn transform-pattern
+  "turns a juy pattern into a core.match pattern
+  (transform-pattern 'def)
+  => '(quote def)
+  
+  (transform-pattern '(+ 1 2 3))
+  => '(((quote +) 1 2 3) :seq)
+
+  (transform-pattern '(^:% vector?))
+  => (list (list vector?) :seq)
+  
+  (transform-pattern ''&)
+  => '(quote &)
+
+  
+  (transform-pattern '&)
+  => '&
+
+  (transform-pattern '{^:% symbol? 1})
+  => {symbol? 1}"
+  {:added "0.1"}
+  [template]
   (cond (#{'(quote &)
            '(quote _)} template)    template
         (or (lazy-seq? template)
