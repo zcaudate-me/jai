@@ -183,7 +183,8 @@
               (->> (map (fn [m] (m zloc)) matchers)
                    (some true?)))))
 
-(declare p-ancestor p-contains p-parent p-child p-first p-sibling p-right p-left)
+(declare p-parent p-child p-first p-last p-nth p-ancestor p-contains p-sibling
+         p-left p-right p-right-of p-left-of p-right-most p-left-most)
 
 (defn compile-matcher [template]
   (cond (-> template meta :-) (p-is template)
@@ -208,13 +209,20 @@
                         :code     (p-code v)
                         :parent   (p-parent v)
                         :first    (p-first v)
+                        :last     (p-last v)
+                        :nth      (p-nth v)
                         :child    (p-child v)
                         :ancestor (p-ancestor v)
                         :contains (p-contains v)
                         :sibling  (p-sibling v)
+                        :left     (p-left v)
                         :right    (p-right v)
-                        :left     (p-left v)))
-                    template))))
+                        :left-of  (p-left-of v)
+                        :right-of (p-right-of v)
+                        :left-most  (p-left-most v)
+                        :right-most (p-right-most v)))
+                    template))
+        :else (compile-matcher {:is template})))
 
 (defn p-parent
   "checks that the parent of the element contains a certain characteristic
@@ -236,24 +244,6 @@
                             (z/sexpr parent))
                       (m-fn parent)))))))
 
-(defn p-first
-  "checks that the first element of the container has a certain characteristic
-  ((p-first 'defn) (-> (z/of-string \"(defn x [])\")))
-  => true
-  
-  ((p-first 'x) (-> (z/of-string \"[x y z]\")))
-  => true
-
-  ((p-first 'x) (-> (z/of-string \"[y z]\")))
-  => false"
-  {:added "0.1"}
-  [template]
-  (let [template (if (symbol? template) {:is template} template)
-        m-fn (compile-matcher template)]
-    (Matcher. (fn [zloc]
-               (if-let [child (z/down zloc)]
-               (m-fn child))))))
-
 (defn p-child
   "checks that there is a child of a container that has a certain characteristic
   ((p-child {:form '=}) (z/of-string \"(if (= x y))\"))
@@ -274,6 +264,63 @@
                        (some identity)
                        nil? not)
                   false)))))
+
+(defn p-first
+  "checks that the first element of the container has a certain characteristic
+  ((p-first 'defn) (-> (z/of-string \"(defn x [])\")))
+  => true
+  
+  ((p-first 'x) (-> (z/of-string \"[x y z]\")))
+  => true
+
+  ((p-first 'x) (-> (z/of-string \"[y z]\")))
+  => false"
+  {:added "0.1"}
+  [template]
+  (let [template (if (symbol? template) {:is template} template)
+        m-fn (compile-matcher template)]
+    (Matcher. (fn [zloc]
+               (if-let [child (z/down zloc)]
+                 (m-fn child))))))
+
+(defn p-last
+  "checks that the last element of the container has a certain characteristic
+  ((p-last 1) (-> (z/of-string \"(defn [] 1)\")))
+  => true
+  
+  ((p-last 'z) (-> (z/of-string \"[x y z]\")))
+  => true
+
+  ((p-last 'x) (-> (z/of-string \"[y z]\")))
+  => false"
+  {:added "0.1"}
+  [template]
+  (let [template (if (symbol? template) {:is template} template)
+        m-fn (compile-matcher template)]
+    (Matcher. (fn [zloc]
+               (if-let [child (-> zloc z/down z/rightmost)]
+                 (m-fn child))))))
+
+(defn p-nth
+  "checks that the last element of the container has a certain characteristic
+  ((p-nth [0 'defn]) (-> (z/of-string \"(defn [] 1)\")))
+  => true
+  
+  ((p-nth [2 'z]) (-> (z/of-string \"[x y z]\")))
+  => true
+
+  ((p-nth [2 'x]) (-> (z/of-string \"[y z]\")))
+  => false"
+  {:added "0.1"}
+  [[num template]]
+  (let [template (if (symbol? template) {:is template} template)
+        m-fn (compile-matcher template)]
+    (Matcher. (fn [zloc]
+                (if-let [child (->> zloc z/down)]
+                  (let [child (if (zero? num)
+                                child
+                                (-> (iterate z/next child) (nth num)))]
+                    (m-fn child)))))))
 
 (defn tree-search
   ([zloc m-fn dir1 dir2]
@@ -311,6 +358,22 @@
     (Matcher. (fn [zloc]
                 (-> zloc (z/up) (tree-search m-fn z/up (fn [_])))))))
 
+(defn p-sibling
+  "checks that any element on the same level has a certain characteristic
+  ((p-sibling '=) (-> (z/of-string \"(if (= x y))\") z/down z/next z/next))
+  => false
+  
+  ((p-sibling 'x) (-> (z/of-string \"(if (= x y))\") z/down z/next z/next))
+  => true"
+  {:added "0.1"}
+  [template]
+  (let [template (if (symbol? template) {:is template} template)
+        m-fn (compile-matcher template)]
+    (Matcher. (fn [zloc]
+                (or (-> zloc z/right (tree-search m-fn z/right (fn [_])))
+                    (-> zloc z/left  (tree-search m-fn z/left (fn [_])))
+                    false)))))
+
 (defn p-left
   "checks that the element on the left has a certain characteristic
   ((p-left '=) (-> (z/of-string \"(if (= x y))\") z/down z/next z/next z/next))
@@ -341,18 +404,57 @@
                 (if-let [right (-> zloc z/right)]
                   (m-fn right))))))
 
-(defn p-sibling
-  "checks that any element on the same level has a certain characteristic
-  ((p-sibling '=) (-> (z/of-string \"(if (= x y))\") z/down z/next z/next))
-  => false
+(defn p-left-of
+  "checks that any element on the left has a certain characteristic
+  ((p-left-of '=) (-> (z/of-string \"(= x y)\") z/down z/next))
+  => true
   
-  ((p-sibling 'x) (-> (z/of-string \"(if (= x y))\") z/down z/next z/next))
+  ((p-left-of '=) (-> (z/of-string \"(= x y)\") z/down z/next z/next))
   => true"
   {:added "0.1"}
   [template]
   (let [template (if (symbol? template) {:is template} template)
         m-fn (compile-matcher template)]
     (Matcher. (fn [zloc]
-                (or (-> zloc z/right (tree-search m-fn z/right (fn [_])))
-                    (-> zloc z/left  (tree-search m-fn z/left (fn [_])))
+                (or (-> zloc z/left (tree-search m-fn z/left (fn [_])))
                     false)))))
+
+(defn p-right-of
+  "checks that any element on the right has a certain characteristic
+  ((p-right-of 'x) (-> (z/of-string \"(= x y)\") z/down))
+  => true
+  
+  ((p-right-of 'y) (-> (z/of-string \"(= x y)\") z/down))
+  => true
+
+  ((p-right-of 'z) (-> (z/of-string \"(= x y)\") z/down))
+  => false"
+  {:added "0.1"}
+  [template]
+  (let [template (if (symbol? template) {:is template} template)
+        m-fn (compile-matcher template)]
+    (Matcher. (fn [zloc]
+                (or (-> zloc z/right (tree-search m-fn z/right (fn [_])))
+                    false)))))
+
+(defn p-left-most
+  "checks that any element on the right has a certain characteristic
+  ((p-left-most true) (-> (z/of-string \"(= x y)\") z/down))
+  => true
+  
+  ((p-left-most true) (-> (z/of-string \"(= x y)\") z/down z/next))
+  => false"
+  {:added "0.1"}
+  [bool]
+  (Matcher. (fn [zloc] (= (-> zloc z/left nil?) bool))))
+
+(defn p-right-most
+  "checks that any element on the right has a certain characteristic
+  ((p-right-most true) (-> (z/of-string \"(= x y)\") z/down z/next))
+  => false
+  
+  ((p-right-most true) (-> (z/of-string \"(= x y)\") z/down z/next z/next))
+  => true"
+  {:added "0.1"}
+  [bool]
+  (Matcher. (fn [zloc] (= (-> zloc z/right nil?) bool))))

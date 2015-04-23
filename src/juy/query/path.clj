@@ -2,7 +2,8 @@
   (:require [rewrite-clj.zip :as z]
             [hara.common.checks :refer [hash-map? regex?]]
             [juy.query.match :as match]
-            [juy.query.walk :as walk]))
+            [juy.query.walk :as walk]
+            [clojure.walk]))
 
 (defn find-cursor-index
   "finds the :| keyword in a vector
@@ -14,7 +15,7 @@
 
   (find-cursor-index '[try :|])
   => 1"
-  {:added "0.1"} 
+  {:added "0.1"}
   [path]
   (let [cursors (keep-indexed (fn [i e] (if (= e :|) i)) path)]
     (case (count cursors)
@@ -45,9 +46,19 @@
          (recur (rest more) (conj out [:> x])))))
 
 (defn compile-path-template [template]
-  (cond (:% (meta template)) (compile-path-template (eval template))
+  (cond (:% (meta template)) (compile-path-template
+                              (eval (with-meta template
+                                      (-> (meta template)
+                                          (dissoc :%)))))
         (fn? template)     {:is template}
-        (map? template)    template
+        (map? template)    (clojure.walk/postwalk
+                            (fn [ele]
+                              (cond (:% (meta ele))
+                                    (eval (with-meta ele
+                                            (-> (meta ele)
+                                                (dissoc :%))))
+                                    :else ele))
+                            template)
         (list? template)   {:pattern template}
         (symbol? template) {:form template}
         :else {:is template}))
@@ -90,7 +101,7 @@
 
   (compile-path '[try :* :| hello])
   => '{:form hello, :ancestor {:form try}}"
-  {:added "0.1"} 
+  {:added "0.1"}
   [path]
   (let [idx (find-cursor-index path)
         len (count path)

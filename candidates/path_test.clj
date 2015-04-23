@@ -83,15 +83,3 @@
                                              :ancestor '(try & _)}}))
 
 
-
-'[:| defn :* catch]
-=> {:form 'defn
-    :contains 'catch}
-
-'[defn :* :| catch]
-=> {:is {:form 'catch
-         :has-children 'catch}}
-
-'[defn :| catch]
-=> {:form 'catch
-    :parent 'defn}

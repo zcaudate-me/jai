@@ -103,6 +103,14 @@
   ((p-parent {:parent 'if}) (-> (z/of-string "(if (= x y))") z/down))
   => false)
 
+^{:refer juy.query.match/p-child :added "0.1"}
+(fact "checks that there is a child of a container that has a certain characteristic"
+  ((p-child {:form '=}) (z/of-string "(if (= x y))"))
+  => true
+
+  ((p-child '=) (z/of-string "(if (= x y))"))
+  => false)
+
 ^{:refer juy.query.match/p-first :added "0.1"}
 (fact "checks that the first element of the container has a certain characteristic"
   ((p-first 'defn) (-> (z/of-string "(defn x [])")))
@@ -114,12 +122,27 @@
   ((p-first 'x) (-> (z/of-string "[y z]")))
   => false)
 
-^{:refer juy.query.match/p-child :added "0.1"}
-(fact "checks that there is a child of a container that has a certain characteristic"
-  ((p-child {:form '=}) (z/of-string "(if (= x y))"))
+^{:refer juy.query.match/p-last :added "0.1"}
+(fact "checks that the last element of the container has a certain characteristic"
+  ((p-last 1) (-> (z/of-string "(defn [] 1)")))
+  => true
+  
+  ((p-last 'z) (-> (z/of-string "[x y z]")))
   => true
 
-  ((p-child '=) (z/of-string "(if (= x y))"))
+  ((p-last 'x) (-> (z/of-string "[y z]")))
+  => false)
+
+
+^{:refer juy.query.match/p-nth :added "0.1"}
+(fact "checks that the last element of the container has a certain characteristic"
+  ((p-nth [0 'defn]) (-> (z/of-string "(defn [] 1)")))
+  => true
+  
+  ((p-nth [2 'z]) (-> (z/of-string "[x y z]")))
+  => true
+
+  ((p-nth [2 'x]) (-> (z/of-string "[y z]")))
   => false)
 
 ^{:refer juy.query.match/p-contains :added "0.1"}
@@ -135,6 +158,14 @@
   ((p-ancestor {:form 'if}) (-> (z/of-string "(if (= x y))") z/down z/next z/next))
   => true
   ((p-ancestor 'if) (-> (z/of-string "(if (= x y))") z/down z/next z/next))
+  => true)
+
+^{:refer juy.query.match/p-sibling :added "0.1"}
+(fact "checks that any element on the same level has a certain characteristic"
+  ((p-sibling '=) (-> (z/of-string "(if (= x y))") z/down z/next z/next))
+  => false
+  
+  ((p-sibling 'x) (-> (z/of-string "(if (= x y))") z/down z/next z/next))
   => true)
 
 ^{:refer juy.query.match/p-left :added "0.1"}
@@ -153,10 +184,39 @@
   ((p-right {:form '=}) (-> (z/of-string "(if (= x y))") z/down))
   => true)
 
-^{:refer juy.query.match/p-sibling :added "0.1"}
-(fact "checks that any element on the same level has a certain characteristic"
-  ((p-sibling '=) (-> (z/of-string "(if (= x y))") z/down z/next z/next))
+^{:refer juy.query.match/p-left-of :added "0.1"}
+(fact "checks that any element on the left has a certain characteristic"
+  ((p-left-of '=) (-> (z/of-string "(= x y)") z/down z/next))
+  => true
+  
+  ((p-left-of '=) (-> (z/of-string "(= x y)") z/down z/next z/next))
+  => true)
+
+^{:refer juy.query.match/p-right-of :added "0.1"}
+(fact "checks that any element on the right has a certain characteristic"
+  ((p-right-of 'x) (-> (z/of-string "(= x y)") z/down))
+  => true
+  
+  ((p-right-of 'y) (-> (z/of-string "(= x y)") z/down))
+  => true
+
+  ((p-right-of 'z) (-> (z/of-string "(= x y)") z/down))
+  => false)
+
+
+^{:refer juy.query.match/p-left-most :added "0.1"}
+(fact "checks that any element on the right has a certain characteristic"
+  ((p-left-most true) (-> (z/of-string "(= x y)") z/down))
+  => true
+  
+  ((p-left-most true) (-> (z/of-string "(= x y)") z/down z/next))
+  => false)
+
+
+^{:refer juy.query.match/p-right-most :added "0.1"}
+(fact "checks that any element on the right has a certain characteristic"
+  ((p-right-most true) (-> (z/of-string "(= x y)") z/down z/next))
   => false
   
-  ((p-sibling 'x) (-> (z/of-string "(if (= x y))") z/down z/next z/next))
+  ((p-right-most true) (-> (z/of-string "(= x y)") z/down z/next z/next))
   => true)

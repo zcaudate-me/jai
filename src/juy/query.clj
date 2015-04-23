@@ -4,7 +4,13 @@
             [juy.query.match :as match]
             [juy.query.path :as path]))
 
-(defn select [zloc path]
+(defn select
+  "(map z/sexpr
+       (select (z/of-file \"src/juy/query/pattern/fn.clj\")
+               '[defmethod :| {:left {:left {:left defmethod}}
+                               :is ^:% vector?}]))
+  => '([pat] [pat ocr] [a b])"
+  {:added "0.1"} [zloc path]
   (let [atm  (atom [])]
     (walk/matchwalk zloc
                     [(-> path
