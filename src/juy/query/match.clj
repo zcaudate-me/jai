@@ -183,8 +183,9 @@
               (->> (map (fn [m] (m zloc)) matchers)
                    (some true?)))))
 
-(declare p-parent p-child p-first p-last p-nth p-ancestor p-contains p-sibling
-         p-left p-right p-right-of p-left-of p-right-most p-left-most)
+(declare p-parent p-child p-first p-last p-nth p-nth-left p-nth-right
+         p-nth-ancestor p-nth-level p-ancestor p-contains
+         p-sibling p-left p-right p-right-of p-left-of p-right-most p-left-most)
 
 (defn compile-matcher [template]
   (cond (-> template meta :-) (p-is template)
@@ -198,29 +199,33 @@
         (hash-map? template)
         (apply p-and
                (map (fn [[k v]]
-                      (condp = k
-                        :fn       (p-fn v)
-                        :is       (p-is v)
-                        :equal    (p-equal v)
-                        :type     (p-type v)
-                        :meta     (p-type v)
-                        :form     (p-form v)
-                        :pattern  (p-pattern v)
-                        :code     (p-code v)
-                        :parent   (p-parent v)
-                        :first    (p-first v)
-                        :last     (p-last v)
-                        :nth      (p-nth v)
-                        :child    (p-child v)
-                        :ancestor (p-ancestor v)
-                        :contains (p-contains v)
-                        :sibling  (p-sibling v)
-                        :left     (p-left v)
-                        :right    (p-right v)
-                        :left-of  (p-left-of v)
-                        :right-of (p-right-of v)
-                        :left-most  (p-left-most v)
-                        :right-most (p-right-most v)))
+                      (case k
+                        :fn           (p-fn v)
+                        :is           (p-is v)
+                        :equal        (p-equal v)
+                        :type         (p-type v)
+                        :meta         (p-type v)
+                        :form         (p-form v)
+                        :pattern      (p-pattern v)
+                        :code         (p-code v)
+                        :parent       (p-parent v)
+                        :child        (p-child v)
+                        :first        (p-first v)
+                        :last         (p-last v)
+                        :nth          (p-nth v)
+                        :nth-left     (p-nth-left v)
+                        :nth-right    (p-nth-right v)
+                        :nth-ancestor (p-nth-ancestor v)
+                        :nth-level    (p-nth-level v)
+                        :ancestor     (p-ancestor v)
+                        :contains     (p-contains v)
+                        :sibling      (p-sibling v)
+                        :left         (p-left v)
+                        :right        (p-right v)
+                        :left-of      (p-left-of v)
+                        :right-of     (p-right-of v)
+                        :left-most    (p-left-most v)
+                        :right-most   (p-right-most v)))
                     template))
         :else (compile-matcher {:is template})))
 
@@ -321,6 +326,46 @@
                                 child
                                 (-> (iterate z/next child) (nth num)))]
                     (m-fn child)))))))
+
+(defn- p-nth-move
+  [num template directon]
+  (let [template (if (symbol? template) {:is template} template)
+        m-fn (compile-matcher template)]
+    (Matcher. (fn [zloc]
+                (let [dir (if (zero? num)
+                            zloc
+                            (-> (iterate directon zloc) (nth num)))]
+                  (m-fn dir))))))
+
+(defn p-nth-left
+  "checks that the last element of the container has a certain characteristic
+  ((p-nth-left [0 'defn]) (-> (z/of-string \"(defn [] 1)\") z/down))
+  => true
+
+  ((p-nth-left [1 ^:% vector?]) (-> (z/of-string \"(defn [] 1)\") z/down z/rightmost))
+  => true"
+  {:added "0.1"}
+  [[num template]]
+  (p-nth-move num template z/left))
+
+(defn p-nth-right
+  "checks that the last element of the container has a certain characteristic
+  ((p-nth-right [0 'defn]) (-> (z/of-string \"(defn [] 1)\") z/down))
+  => true
+  
+  ((p-nth-right [1 ^:% vector?]) (-> (z/of-string \"(defn [] 1)\") z/down))
+  => true"
+  {:added "0.1"}
+  [[num template]]
+  (p-nth-move num template z/right))
+
+(defn p-nth-ancestor
+  [[num template]]
+  (p-nth-move num template z/up))
+
+(defn p-nth-level
+  [[num template]]
+  (p-nth-move num template z/down))
 
 (defn tree-search
   ([zloc m-fn dir1 dir2]

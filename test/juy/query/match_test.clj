@@ -145,6 +145,24 @@
   ((p-nth [2 'x]) (-> (z/of-string "[y z]")))
   => false)
 
+
+^{:refer juy.query.match/p-nth-left :added "0.1"}
+(fact "checks that the last element of the container has a certain characteristic"
+  ((p-nth-left [0 'defn]) (-> (z/of-string "(defn [] 1)") z/down))
+  => true
+
+  ((p-nth-left [1 ^:% vector?]) (-> (z/of-string "(defn [] 1)") z/down z/rightmost))
+  => true)
+
+
+^{:refer juy.query.match/p-nth-right :added "0.1"}
+(fact "checks that the last element of the container has a certain characteristic"
+  ((p-nth-right [0 'defn]) (-> (z/of-string "(defn [] 1)") z/down))
+  => true
+  
+  ((p-nth-right [1 ^:% vector?]) (-> (z/of-string "(defn [] 1)") z/down))
+  => true)
+
 ^{:refer juy.query.match/p-contains :added "0.1"}
 (fact "checks that any element (deeply nested also) of the container matches"
   ((p-contains '=) (z/of-string "(if (= x y))"))

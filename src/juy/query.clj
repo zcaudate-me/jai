@@ -2,7 +2,14 @@
   (:require [rewrite-clj.zip :as z]
             [juy.query.walk  :as walk]
             [juy.query.match :as match]
+            [juy.query.path.classify :as classify]
             [juy.query.path :as path]))
+
+(defn match [path]
+  (-> path
+      (classify/classify)
+      (path/compile-map)
+      (match/compile-matcher)))
 
 (defn select
   "(map z/sexpr
@@ -10,12 +17,11 @@
                '[defmethod :| {:left {:left {:left defmethod}}
                                :is ^:% vector?}]))
   => '([pat] [pat ocr] [a b])"
-  {:added "0.1"} [zloc path]
+  {:added "0.1"}
+  [zloc path]
   (let [atm  (atom [])]
     (walk/matchwalk zloc
-                    [(-> path
-                         (path/compile-path)
-                         (match/compile-matcher))]
+                    [(match path)]
                     (fn [zloc]
                       (swap! atm conj zloc)
                       zloc))
@@ -23,10 +29,7 @@
 
 (defn modify [zloc path func & args]
   (walk/matchwalk zloc
-                  [(-> path
-                       (path/compile-path)
-                       (match/compile-matcher))]
-                  
+                  [(match path)]
                   (fn [zloc]
                     (apply func zloc args))))
 

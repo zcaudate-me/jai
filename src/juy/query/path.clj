@@ -1,113 +1,127 @@
 (ns juy.query.path
-  (:require [rewrite-clj.zip :as z]
-            [hara.common.checks :refer [hash-map? regex?]]
-            [juy.query.match :as match]
-            [juy.query.walk :as walk]
-            [clojure.walk]))
+  (:require [juy.query.path.classify :as classify]
+            [clojure.walk :as walk]))
 
-(defn find-cursor-index
-  "finds the :| keyword in a vector
-  (find-cursor-index [])
-  => -1
+(def moves
+  {:step   {:up     :parent
+            :down   :child
+            :left   :left
+            :right  :right}
+   :multi  {:up     :ancestor
+            :down   :contains
+            :left   :left-of
+            :right  :right-of}
+   :nth    {:up     :nth-ancestor
+            :down   :nth-level
+            :left   :nth-left
+            :right  :nth-right}})
 
-  (find-cursor-index '[try])
-  => -1
+(def limits
+  {:#  {:up    :top-most
+        :left  :left-most}
+   :$  {:down  :bottom-most
+        :right :right-most}})
 
-  (find-cursor-index '[try :|])
-  => 1"
-  {:added "0.1"}
-  [path]
-  (let [cursors (keep-indexed (fn [i e] (if (= e :|) i)) path)]
-    (case (count cursors)
-        0 -1
-        1 (first cursors)
-        (throw (ex-info "There should only be one `:|` in the path:" 
-                        {:path path :cursors cursors})))))
+(def any? (constantly true))
 
-(defn group-items
-  "groups 
-  (group-items '[try if])
-  => '[[:> try] [:> if]]
-  
-  (group-items '[try :* if])
-  => '[[:* try] [:> if]]"
-  {:added "0.1"}
-  ([path] (group-items path []))
+(defn expand-special [ele]
+  (if (keyword? ele)
+    (or (if (= :* ele) {:type :multi})
+        (if-let [step (try (Integer/parseInt (name ele))
+                           (catch java.lang.NumberFormatException e))]
+          (if (> step 0)
+            {:type :nth :step step}))
+        (throw (ex-info "Not a valid keyword (either :* or :<natural number>)" {:value ele})))))
+
+(defn expand-path
+  ([path] (expand-path path []))
   ([[x y & xs :as more] out]
-   (cond (empty? more) out
+   (if-not (empty? more)
+     (let [xmap  (expand-special x)
+           xmeta (if (instance? clojure.lang.IObj x)
+                   (meta (classify/normalise-meta x)))
+           ymap  (expand-special y)
+           ymeta (if (instance? clojure.lang.IObj y)
+                   (meta (classify/normalise-meta y)))]
+       
+       (cond (and (nil? xmap) (= 1 (count more)))
+             (conj out (merge {:type :step :element x} xmeta))
+             
+             (nil? xmap)
+             (recur (cons y xs)
+                    (conj out (merge {:type :step :element x} xmeta)))
+             
+             (and xmap ymap)    
+             (recur (cons y xs)
+                    (conj out (assoc xmap :element '_)))
+             
+             (and xmap (= 1 (count more)))
+             (conj out (assoc xmap :element '_))
+             
+             :else
+             (recur xs
+                    (conj out (merge (assoc xmap :element y) ymeta)))))
+     out)))
 
-         (= :* y)
-         (recur xs (conj out [:* x]))
+(defn compile-section-base [section]
+  (let [{:keys [element] evaluate? :%} section]
+    (cond evaluate?
+          (compile-section-base (-> section
+                                    (assoc :element (eval element))
+                                    (dissoc :%)))
 
-         (= :> x)
-         (recur xs (conj out [:> nil]))
-         
-         :else
-         (recur (rest more) (conj out [:> x])))))
+          (= '_ element)    {:is any?}
+          (fn? element)     {:is element}
+          (map? element)    (walk/postwalk
+                             (fn [ele]
+                               (cond (:% (meta ele))
+                                     (eval (with-meta ele
+                                             (-> (meta ele)
+                                                 (dissoc :%))))
+                                     :else ele))
+                             element)
+          (list? element)   {:pattern element}
+          (symbol? element) {:form element}
+          :else {:is element})))
 
-(defn compile-path-template [template]
-  (cond (:% (meta template)) (compile-path-template
-                              (eval (with-meta template
-                                      (-> (meta template)
-                                          (dissoc :%)))))
-        (fn? template)     {:is template}
-        (map? template)    (clojure.walk/postwalk
-                            (fn [ele]
-                              (cond (:% (meta ele))
-                                    (eval (with-meta ele
-                                            (-> (meta ele)
-                                                (dissoc :%))))
-                                    :else ele))
-                            template)
-        (list? template)   {:pattern template}
-        (symbol? template) {:form template}
-        :else {:is template}))
+(defn compile-section [direction prev section]
+  (let [base (compile-section-base section)
+        {:keys [element type step]
+         start?    :#
+         end?      :$
+         optional? :?} section
+        dkey (get-in moves [type direction])
+        lmap (-> [(if start? (get-in limits [:# direction]))
+                  (if end?   (get-in limits [:# direction]))]
+                 (->> (keep identity))
+                 (zipmap (repeat true)))
+        base (merge base lmap)
+        current (merge base prev)
+        current (if optional?
+                  {:or #{current (merge {:is any?} prev)}}
+                  current)]
+    (if (= type :nth)
+      {dkey [step current]}
+      {dkey current})))
 
-(defn compile-before-directives
-  ([ds]
-   (reduce (fn [out [j template]]
-             (let [k (case j :* :ancestor :> :parent)]
-               {k (merge out (compile-path-template template))}))
-           {}
-           ds)))
+(defn compile-submap [direction sections]
+  (reduce (fn [i section]
+            (compile-section direction i section))
+          nil sections))
 
-(defn compile-after-directives
-  ([ds] (compile-after-directives ds {}))
-  ([[[j template] & more :as ds] out]
-   (cond (empty? ds) out
-
-         :else
-         (recur more
-                (let [k (case j :* :contains :> :child)
-                      m (merge out (compile-path-template template))]
-                  (if (and (empty? more)
-                           (= j :>))
-                    m
-                    {k m}))))))
-
-(defn compile-path
-  "compiles the path for search
-  (compile-path '[try])
-  => '{:form try}
-
-  (compile-path '[try :|])
-  => '{:parent {:form try}}
-
-  (compile-path '[try :* hello])
-  => '{:contains {:form hello}, :form try}
-
-  (compile-path '[try :| :* hello])
-  => '{:contains {:form hello}, :parent {:form try}}
-
-  (compile-path '[try :* :| hello])
-  => '{:form hello, :ancestor {:form try}}"
-  {:added "0.1"}
-  [path]
-  (let [idx (find-cursor-index path)
-        len (count path)
-        [before after] (if (= idx -1)
-                         [[] (-> path reverse group-items)]
-                         [(-> (subvec path 0 idx) group-items)
-                          (-> (subvec path (inc idx) len) reverse group-items)])]
-    (merge (compile-before-directives before)
-           (compile-after-directives after))))
+(defn compile-map [mpaths]
+  (let [{:keys [left right down] :as msections}
+        (reduce-kv (fn [m k path]
+                     (assoc m k (reverse (expand-path path))))
+                   {}
+                   (dissoc mpaths :modifiers))
+        
+        ;; adjust the cursor if it is between two symbols
+        [curr msections] (if (and (not (or (:left msections) (:right msections)))
+                                  (first down))
+                           [(first down) (update-in msections [:down] rest)]
+                           [nil msections])]
+    (->> msections
+         (map (fn [[k v]] (compile-submap k v)))
+         (apply merge)
+         (merge (if curr  (compile-section-base curr))))))

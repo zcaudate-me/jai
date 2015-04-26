@@ -8,12 +8,20 @@
 (fact 
   (map z/sexpr
        (select (z/of-file "src/juy/query/pattern/fn.clj")
-               '[defmethod :| {:left {:left {:left defmethod}}
-                               :is ^:% vector?}]))
-  => '([pat] [pat ocr] [a b]))
-  (comment
+               '[defmethod :|]))
 
-(path/compile-path '[defmethod :| ^:% vector?])
+  
+  => '([pat] [pat ocr] [a b]))
+(comment
+
+  (-> (z/of-file "src/juy/query/pattern/fn.clj")
+      z/right
+      z/sexpr)
+
+  (map z/sexpr (select (z/of-file "src/juy/query/path.clj")
+                       '[(defn & _)]))
+  
+(path/compile-path '[defmethod ^:% vector? []])
 (path/compile-path '[defmethod :| {:is ^:% vector?}])
 (path/compile-path '[defmethod :| ^:% {:is vector?}])
 {:form vector?, :parent {:form defmethod}}
