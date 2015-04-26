@@ -3,7 +3,7 @@
   (:require [juy.query.path.classify :refer :all]))
 
 {:refer juy.query.path.classify/normalise-meta :added "0.1"}
-(fact "converts "
+(fact "converts a symbol to have seperated meta tags"
   (meta (normalise-meta '^:? _))
   => {:? true}
   
