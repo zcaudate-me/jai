@@ -15,26 +15,26 @@
 (fact "converts a vector into a map of elements"
 
   (classify '[defn])
-  => '{:down [defn]}
+  => '{:down [defn] :modifiers {:direction :vertical}}
 
   (classify '[defn | if])
-  => '{:down [if] :up [defn]}
+  => '{:down [if] :up [defn] :modifiers {:direction :vertical}}
 
   (classify '[defn if |])
-  => '{:up [if defn]}
+  => '{:up [if defn] :modifiers {:direction :vertical}}
 
   (classify '[defn if [^:# |]])
-  => '{:up [if defn] :modifiers {:# true}}
+  => '{:up [if defn] :modifiers {:# true :direction :horizontal}}
 
   (classify '[defn if [^:# _ _]])
-  => '{:up [if defn] :left [_ ^:# _]}
+  => '{:up [if defn] :left [_ ^:# _] :modifiers {:direction :horizontal}}
 
   (classify '[defn if [^:# _ _] then])
-  => '{:up [if defn] :left [_ ^:# _] :down [then]}
+  => '{:up [if defn] :left [_ ^:# _] :down [then] :modifiers {:direction :horizontal}}
   
   (classify '[defn if [^:# _ _ | ^:% vector?]])
-  => '{:up [if defn] :left [_ ^:# _] :right [^:% vector?]}
+  => '{:up [if defn] :left [_ ^:# _] :right [^:% vector?] :modifiers {:direction :horizontal}}
 
   (classify '[defn :2 if [_ _] hello])
-  => '{:up [if :2 defn] :left [_ _] :down [hello]})
+  => '{:up [if :2 defn] :left [_ _] :down [hello] :modifiers {:direction :horizontal}})
 

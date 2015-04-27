@@ -17,10 +17,14 @@
             :right  :nth-right}})
 
 (def limits
-  {:#  {:up    :top-most
-        :left  :left-most}
-   :$  {:down  :bottom-most
-        :right :right-most}})
+  {:#  {:up         :top-most
+        :left       :left-most
+        :horizontal :left-most
+        :vertical   :top-most}
+   :$  {:down       :bottom-most
+        :right      :right-most
+        :horizontal :right-most
+        :vertical   :bottom-most}})
 
 (def any? (constantly true))
 
@@ -84,18 +88,21 @@
           (symbol? element) {:form element}
           :else {:is element})))
 
-(defn compile-section [direction prev section]
-  (let [base (compile-section-base section)
-        {:keys [element type step]
-         start?    :#
-         end?      :$
-         optional? :?} section
+(defn merge-limits [base direction section]
+  (let [{:keys [element type step]
+          start?    :#
+          end?      :$} section
+          lmap (-> [(if start? (get-in limits [:# direction]))
+                    (if end?   (get-in limits [:$ direction]))]
+                   (->> (keep identity))
+                   (zipmap (repeat true)))]
+    (merge base lmap)))
+
+(defn compile-section [direction prev {:keys [type step] optional? :? :as section}]
+  (let [base (-> section
+                 compile-section-base
+                 (merge-limits direction section))
         dkey (get-in moves [type direction])
-        lmap (-> [(if start? (get-in limits [:# direction]))
-                  (if end?   (get-in limits [:# direction]))]
-                 (->> (keep identity))
-                 (zipmap (repeat true)))
-        base (merge base lmap)
         current (merge base prev)
         current (if optional?
                   {:or #{current (merge {:is any?} prev)}}
@@ -109,7 +116,19 @@
             (compile-section direction i section))
           nil sections))
 
-(defn compile-map [mpaths]
+(defn merge-current-modifiers [curr {:keys [direction]
+                                     start? :#
+                                     end?   :$
+                                     :as modifiers}]
+  (let [curr (if start?
+               (assoc curr (get-in limits [start? direction]) true)
+               curr)
+        curr (if end?
+               (assoc curr (get-in limits [end? direction]) true)
+               curr)]
+    curr))
+
+(defn compile-map [{:keys [modifiers] :as mpaths}]
   (let [{:keys [left right down] :as msections}
         (reduce-kv (fn [m k path]
                      (assoc m k (reverse (expand-path path))))
@@ -117,11 +136,19 @@
                    (dissoc mpaths :modifiers))
         
         ;; adjust the cursor if it is between two symbols
-        [curr msections] (if (and (not (or (:left msections) (:right msections)))
-                                  (first down))
-                           [(first down) (update-in msections [:down] rest)]
-                           [nil msections])]
+        [curr msections] (cond (and (= :vertical (:direction modifiers))
+                                    (first down))
+                               [(first down) (update-in msections [:down] rest)]
+
+                               (and (= :horizontal (:direction modifiers))
+                                    (last left))
+                               [(last left) (update-in msections [:left] butlast)]
+                               
+                               :else [nil msections])]
     (->> msections
          (map (fn [[k v]] (compile-submap k v)))
          (apply merge)
-         (merge (if curr  (compile-section-base curr))))))
+         (merge (-> curr
+                    (compile-section-base)
+                    (merge-limits (:direction modifiers) curr)
+                    (merge-current-modifiers modifiers))))))

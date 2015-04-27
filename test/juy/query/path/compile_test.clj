@@ -60,5 +60,9 @@
       :child {:child {:form '-}, :form '+},
       :left {:is any?},
       :right {:or #{{:is vector?}
-                    {:is any?}}}})
+                    {:is any?}}}}
+
+  (-> '[if [_ | ^:$ _]]
+      (classify/classify)
+      (compile-map)))
 

@@ -33,6 +33,28 @@
                   (fn [zloc]
                     (apply func zloc args))))
 
+(defn $* [context path & args]
+  (let [context (cond (string? context)
+                      (z/of-file context)
+
+                      (map? context)
+                      (cond (:file context)
+                            (z/of-file (:file context))
+
+                            (:code context)
+                            (z/of-string (:code context))
+
+                            :else (throw (ex-info "keys can only be either :file or :code" context)))
+                      :else (throw (ex-info "context can only be a string or map" {:value context})))]
+    (cond (empty? args)
+          (->> (select context path)
+               (map z/sexpr))
+
+          :else (apply modify context path args))))
+
+(defmacro $ [context path & args]
+  `($* ~context (quote ~path) ~@args))
+
 (defn root-sexp [zloc]
   (if-let [nloc (z/up zloc)]
     (condp = (z/tag nloc)

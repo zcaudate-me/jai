@@ -58,7 +58,7 @@
       (compile-map))
   => {:parent {:nth-ancestor [1 {:form 'defn}], :form 'if},
       :child {:child {:form '-}, :form '+},
-      :left {:is any?},
+      :is any?,
       :right {:or #{{:is vector?}
                     {:is any?}}}})
 

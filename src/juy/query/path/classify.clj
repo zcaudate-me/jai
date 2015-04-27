@@ -35,22 +35,27 @@
        (with-meta ele)))
 
 (defn- classify-horizontal [path]
-  (let [[h-idx h-ele] (find-index path ['|])]
+  (let [[h-idx h-ele] (find-index path ['|])
+        loc {:direction :horizontal}]
     (if (= h-idx -1)
-      [(reverse path) nil nil]
+      [(reverse path) nil loc]
       [(reverse (subvec path 0 h-idx))
        (subvec path (inc h-idx) (count path))
-       (meta (normalise-meta h-ele))])))
+       (merge (meta (normalise-meta h-ele)) {:direction :horizontal})])))
 
 (defn classify [path]
   (let [[v-idx v-ele] (find-index path ['| #'vector?])
+        loc {:direction :vertical}
         [up down cur] (if (= v-idx -1)
                         [[] path nil]
                         [(reverse (subvec path 0 v-idx))
                          (subvec path (inc v-idx) (count path))
                          v-ele])
-        [left right mods] (cond (= cur '|)
-                                [[] [] (meta (normalise-meta cur))]
+        [left right mods] (cond (nil? cur)
+                                [[] [] loc]
+                                
+                                (= cur '|)
+                                [[] [] (merge (meta (normalise-meta cur)) loc)]
           
                                 (vector? cur)
                                 (classify-horizontal cur))]
