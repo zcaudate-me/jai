@@ -1,4 +1,4 @@
-(defproject im.chit/juy "0.1.0-SNAPSHOT"
+(defproject im.chit/juy "0.1.0"
   :description "Manipulate source code like the DOM"
   :url "http://github.com/zcaudate/juy"
   :license {:name "The MIT License"
