@@ -1,7 +1,8 @@
 (ns juy.query.path-test
   (:use midje.sweet)
   (:require [juy.query.path :refer :all]
-            [juy.query.path.classify :as classify]))
+            [juy.query.path.classify :as classify]
+            [juy.query.match :as match]))
 
 {:refer juy.query.path/expand-special :added "0.1"}
 (fact "expanding the special keywords before symbols"
@@ -41,7 +42,7 @@
   => {:left-of {:form 'if :is vector?}}
 
   (compile-section :down {:is vector?} '{:type :nth :step 2 :element if})
-  => {:nth-level [2 {:is vector?, :form 'if}]})
+  => {:nth-contains [2 {:is vector?, :form 'if}]})
 
 {:refer juy.query.path/compile-submap :added "0.1"}
 (fact "part of the map compilation"
@@ -62,3 +63,41 @@
       :right {:or #{{:is vector?}
                     {:is any?}}}})
 
+
+
+(comment
+  (-> '[defmethod [_ | ^:$ _]]
+      (classify/classify)
+      (compile-map))
+  => {:parent {:form 'defmethod},
+      :is any?
+      :right {:right-most true,
+              :is any?}}
+
+  (-> '[defmethod [| ^:$ _]]
+      (classify/classify)
+      (compile-map))
+  => {:parent {:form 'defmethod},
+      :is any?
+      :right {:right-most true,
+              :is any?}}
+
+  (-> '[defmethod [_ | :1 ^:$ _]]
+      (classify/classify)
+      (compile-map))
+  => {:parent {:form defmethod},
+      :nth-right [1 {:right-most true,
+                     :is any?}],
+      :is any?}
+
+  (-> '[defn println]
+      (classify/classify)
+      (compile-map))
+
+  (-> '[defn :2 prn]
+      (classify/classify)
+      (compile-map)
+      (match/compile-matcher))
+  {:nth-level [2 {:form prn}], :form defn}
+  
+  )

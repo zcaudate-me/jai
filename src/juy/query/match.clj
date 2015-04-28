@@ -184,7 +184,7 @@
                    (some true?)))))
 
 (declare p-parent p-child p-first p-last p-nth p-nth-left p-nth-right
-         p-nth-ancestor p-nth-level p-ancestor p-contains
+         p-nth-ancestor p-nth-contains p-ancestor p-contains
          p-sibling p-left p-right p-right-of p-left-of p-right-most p-left-most)
 
 (defn compile-matcher [template]
@@ -202,6 +202,7 @@
                       (case k
                         :fn           (p-fn v)
                         :is           (p-is v)
+                        :or           (apply p-or (map compile-matcher template))
                         :equal        (p-equal v)
                         :type         (p-type v)
                         :meta         (p-type v)
@@ -216,7 +217,7 @@
                         :nth-left     (p-nth-left v)
                         :nth-right    (p-nth-right v)
                         :nth-ancestor (p-nth-ancestor v)
-                        :nth-level    (p-nth-level v)
+                        :nth-contains (p-nth-contains v)
                         :ancestor     (p-ancestor v)
                         :contains     (p-contains v)
                         :sibling      (p-sibling v)
@@ -363,10 +364,6 @@
   [[num template]]
   (p-nth-move num template z/up))
 
-(defn p-nth-level
-  [[num template]]
-  (p-nth-move num template z/down))
-
 (defn tree-search
   ([zloc m-fn dir1 dir2]
      (if zloc
@@ -389,6 +386,33 @@
         m-fn (compile-matcher template)]
     (Matcher. (fn [zloc]
                 (-> zloc (z/down) (tree-search m-fn z/right z/down))))))
+
+(defn tree-depth-search
+  ([zloc m-fn level dir1 dir2]
+   (if zloc
+     (cond
+       (< level 0) nil
+       (and (= level 0) (m-fn zloc)) true
+       :else
+       (or (tree-depth-search (dir1 zloc) m-fn (dec level) dir1 dir2)
+           (tree-depth-search (dir2 zloc) m-fn level dir1 dir2))))))
+
+(defn p-nth-contains
+  "checks that any element (deeply nested also) of the container matches
+  ((p-contains '=) (z/of-string \"(if (= x y))\"))
+  => true
+
+  ((p-contains 'x) (z/of-string \"(if (= x y))\"))
+  => true"
+  {:added "0.1"}
+  [[num template]]
+  (let [template (if (symbol? template) {:is template} template)
+        m-fn (compile-matcher template)]
+    (Matcher. (fn [zloc]
+                (let [[dir num] (if (zero? num)
+                                  [zloc num]
+                                  [(z/down zloc) (dec num)])]
+                  (tree-depth-search dir m-fn num z/down z/right))))))
 
 (defn p-ancestor
   "checks that any parent container matches

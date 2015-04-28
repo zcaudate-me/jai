@@ -12,7 +12,7 @@
             :left   :left-of
             :right  :right-of}
    :nth    {:up     :nth-ancestor
-            :down   :nth-level
+            :down   :nth-contains
             :left   :nth-left
             :right  :nth-right}})
 
@@ -137,14 +137,14 @@
         
         ;; adjust the cursor if it is between two symbols
         [curr msections] (cond (and (= :vertical (:direction modifiers))
-                                    (first down))
-                               [(first down) (update-in msections [:down] rest)]
+                                    (last down))
+                               [(last down) (update-in msections [:down] butlast)]
 
                                (and (= :horizontal (:direction modifiers))
                                     (last left))
                                [(last left) (update-in msections [:left] butlast)]
                                
-                               :else [nil msections])]
+                               :else [{:element '_} msections])]
     (->> msections
          (map (fn [[k v]] (compile-submap k v)))
          (apply merge)
