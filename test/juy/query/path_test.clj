@@ -98,6 +98,27 @@
       (classify/classify)
       (compile-map)
       (match/compile-matcher))
-  {:nth-level [2 {:form prn}], :form defn}
+  {:nth-level [2 {:form prn}],
+   :form defn}
+
+
+  (-> '[defn | #{println}]
+      (classify/classify)
+      (compile-map))
+  {:parent {:form defn}, :is #{println}}
+  (match/compile-matcher)
+
+  (-> '[defn [^:# _ {:is hello}]]
+      (classify/classify)
+      (compile-map))
+  {:parent {:form defn}, :left {:left-most true, :is #<core$constantly$fn__4085 clojure.core$constantly$fn__4085@2013fca3>}, :form hello}
+  
+  (-> '[defn [^:# _ _]]
+      (classify/classify)
+      (compile-map))
+  {:parent {:form defn},
+   :left {:left-most true,
+          :is any?},
+   :is any?}
   
   )

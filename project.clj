@@ -2,7 +2,7 @@
   :description "Manipulate source code like the DOM"
   :url "http://github.com/zcaudate/juy"
   :license {:name "The MIT License"
-            :url "http://http://opensource.org/licenses/MIT"}
+            :url "http://opensource.org/licenses/MIT"}
   :profiles {:dev {:dependencies [[midje "1.6.3"]]
                    :plugins [[lein-midje "3.1.3"]
                              [lein-midje-doc "0.0.24"]]}}

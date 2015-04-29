@@ -61,6 +61,8 @@
 
   ($ fragment [defn :3 prn])
   => '()
+
+  ($ fragment [defn | #{println}])
   
   
   
@@ -118,13 +120,28 @@
   ($ fragment [defn | println])
   => '((println "hello"))
 
+  ($ fragment [defn println |])
+  => '(println "hello")
+
   ($ fragment [defn println [^:$ _]])
   => '("hello")
 
   ($ fragment [defn println [^:# _ _]])
   => '("hello")
+
+  ($ fragment [defn [{:is hello}]])
+  => (hello)
   
+  ($ fragment [defn [^:# _ _ _ println]])
+  => ((println "hello"))
+
+  ($ fragment [defn [^:# _ _]])
+  => '(hello world)
+
+  ($ fragment [defn [^:$ _]])
+  => '((println "hello") (if true (prn "world")))
   
+
 
   ($ {:code "(defn hello [] (println \"hello world\"))"}
      [_ :* println])

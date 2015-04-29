@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/zcaudate/juy.png?branch=master)](https://travis-ci.org/zcaudate/juy)
 
-Query and manipulate source code like the DOM
+Manipulate source code like the DOM
 
 ## Introduction
 
