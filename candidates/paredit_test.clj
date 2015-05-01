@@ -1,6 +1,6 @@
-(ns juy.paredit-test
+(ns gia.paredit-test
   (:use midje.sweet)
-  (:require [juy.paredit :refer :all]))
+  (:require [gia.paredit :refer :all]))
 
 (-> (z/of-string "(hello) (world)")
     z/right

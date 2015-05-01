@@ -1,18 +1,18 @@
-# juy
+# gia
 
-[![Build Status](https://travis-ci.org/zcaudate/juy.png?branch=master)](https://travis-ci.org/zcaudate/juy)
+[![Build Status](https://travis-ci.org/zcaudate/gia.png?branch=master)](https://travis-ci.org/zcaudate/gia)
 
 Manipulate source code like the DOM
 
 ## Introduction
 
-`juy` combines two very useful libraries - [rewrite-clj](https://github.com/xsc/rewrite-clj) and [core.match](https://github.com/clojure/core.match) to birth a jquery/xpath - inspired dsl for source code querying and manipulation of your clojure code base.
+`gia` combines two very useful libraries - [rewrite-clj](https://github.com/xsc/rewrite-clj) and [core.match](https://github.com/clojure/core.match) to birth a jquery/xpath - inspired dsl for source code querying and manipulation of your clojure code base.
 
 ## Motivation
 
 As lisp code follows a tree-like structure, it is very useful to be able to have a simple language to be able to query as well as update elements of that tree. We can do this with the fantastic [rewrite-clj](https://www.github.com/xsc/rewrite-clj) directly in source code. However, my gripe with library is that it is hard to reason about the higher level concepts of code when using just a zipper. Having written a whole bunch of code that is rather difficult to reason about, I wanted to have a better interface.
 
-`juy` is essentially a query/manipulation tool inspired by jquery and css selectors that make for easy dom manipulation and query. Instead of writing the following code with `rewrite-clj`:
+`gia` is essentially a query/manipulation tool inspired by jquery and css selectors that make for easy dom manipulation and query. Instead of writing the following code with `rewrite-clj`:
 
 ```clojure
 (if (and (-> zloc z/prev z/prev z/sexpr (= "defn"))
@@ -21,7 +21,7 @@ As lisp code follows a tree-like structure, it is very useful to be able to have
     zloc)
 ```
 
-`juy` allows the above logic to be expressed in a DSL like manner:
+`gia` allows the above logic to be expressed in a DSL like manner:
 
 ```clojure
 ($ zloc [_ [defn ^:% vector? _]] do-something)
@@ -32,13 +32,13 @@ As lisp code follows a tree-like structure, it is very useful to be able to have
 Add to project.clj dependencies:
 
 ```clojure
-[im.chit/juy "0.1.0"]
+[im.chit/gia "0.1.0"]
 ```
 
-All functionality is in the `juy.query` namespace:
+All functionality is in the `gia.query` namespace:
 
 ```clojure
-> (use juy.query)
+> (use gia.query)
 ```
 
 ### Basics

@@ -1,4 +1,4 @@
-(ns juy.query.pattern.fn
+(ns gia.query.pattern.fn
   (:require [clojure.core.match :as match]))
 
 (defmethod match/emit-pattern clojure.lang.Fn

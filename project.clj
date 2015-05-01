@@ -1,6 +1,6 @@
-(defproject im.chit/juy "0.1.0"
+(defproject im.chit/gia "0.2.1"
   :description "Manipulate source code like the DOM"
-  :url "http://github.com/zcaudate/juy"
+  :url "http://github.com/zcaudate/gia"
   :license {:name "The MIT License"
             :url "http://opensource.org/licenses/MIT"}
   :profiles {:dev {:dependencies [[midje "1.6.3"]]

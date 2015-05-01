@@ -1,13 +1,13 @@
-(ns juy.query.pattern
+(ns gia.query.pattern
   (:require  [hara.common.checks :refer [hash-map?]]
-             [juy.query.pattern regex fn]
+             [gia.query.pattern regex fn]
              [clojure.core.match :as match]
              [clojure.walk :as walk]))
 
 (defn lazy-seq? [x] (instance? clojure.lang.LazySeq x))
 
 (defn transform-pattern
-  "turns a juy pattern into a core.match pattern
+  "turns a gia pattern into a core.match pattern
   (transform-pattern 'def)
   => '(quote def)
   

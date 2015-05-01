@@ -1,9 +1,9 @@
-(ns juy.query
+(ns gia.query
   (:require [rewrite-clj.zip :as z]
-            [juy.query.walk  :as walk]
-            [juy.query.match :as match]
-            [juy.query.path.classify :as classify]
-            [juy.query.path :as path]))
+            [gia.query.walk  :as walk]
+            [gia.query.match :as match]
+            [gia.query.path.classify :as classify]
+            [gia.query.path :as path]))
 
 (defn match [path]
   (-> path
@@ -13,7 +13,7 @@
 
 (defn select
   "(map z/sexpr
-       (select (z/of-file \"src/juy/query/pattern/fn.clj\")
+       (select (z/of-file \"src/gia/query/pattern/fn.clj\")
                '[defmethod :| {:left {:left {:left defmethod}}
                                :is ^:% vector?}]))
   => '([pat] [pat ocr] [a b])"
@@ -72,32 +72,32 @@
     zloc))
 
 (comment
-  #_($ "src/juy/query/match.clj"
+  #_($ "src/gia/query/match.clj"
        [defmethod :> ]
        )
 
 
-  (->> (juy "src/juy/query/pattern/fn.clj" [{:form 'catch
+  (->> (gia "src/gia/query/pattern/fn.clj" [{:form 'catch
                                              :ancestor 'defmethod}])
        
 
        (map z/sexpr))
 
-  (->> (juy "src/juy/query/pattern/fn.clj" ['(defmethod _ [_ _] & _)
+  (->> (gia "src/gia/query/pattern/fn.clj" ['(defmethod _ [_ _] & _)
                                             
                                             ])
        ;;(map root-sexp)
 
        (map z/sexpr))
 
-  (->> (juy "src/juy/query/pattern/fn.clj" ['(defmethod & _)
+  (->> (gia "src/gia/query/pattern/fn.clj" ['(defmethod & _)
                                             list?
                                             ])
        ;;(map root-sexp)
 
        (map z/sexpr))
 
-  (->> (juy "src/juy/query/match.clj" ['(defmethod _ [_ _] & _)
+  (->> (gia "src/gia/query/match.clj" ['(defmethod _ [_ _] & _)
                                        #{vector? symbol?}
                                        ])
        ;;(map root-sexp)
