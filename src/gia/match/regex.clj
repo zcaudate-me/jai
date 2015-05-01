@@ -1,4 +1,4 @@
-(ns gia.match.regex
+(ns jai.match.regex
   (:require [clojure.core.match :as match]))
 
 (defmethod match/emit-pattern java.util.regex.Pattern

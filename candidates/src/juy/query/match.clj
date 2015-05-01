@@ -1,7 +1,7 @@
-(ns gia.query.match
+(ns jai.query.match
   (:require [rewrite-clj.zip :as z]
             [hara.common.checks :refer [hash-map? regex?]]
-            [gia.query.pattern :refer [pattern-fn]]))
+            [jai.query.pattern :refer [pattern-fn]]))
 
 (defrecord Matcher [fn]
   clojure.lang.IFn

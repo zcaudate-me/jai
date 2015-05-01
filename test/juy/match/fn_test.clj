@@ -1,6 +1,6 @@
-(ns gia.match.fn-test
+(ns jai.match.fn-test
   (:use midje.sweet)
-  (:require  [gia.match [pattern :refer :all] fn]))
+  (:require  [jai.match [pattern :refer :all] fn]))
 
 (fact "make sure that functions are working properly"
   ((pattern-fn vector?) [])

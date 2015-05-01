@@ -1,4 +1,4 @@
-(ns gia.paredit
+(ns jai.paredit
   (:require [rewrite-clj.zip :as z]
             [rewrite-clj.node.whitespace :as ws])
   (:refer-clojure :exclude [slurp]))

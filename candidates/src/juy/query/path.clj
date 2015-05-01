@@ -1,5 +1,5 @@
-(ns gia.query.path
-  (:require [gia.query.path.classify :as classify]
+(ns jai.query.path
+  (:require [jai.query.path.classify :as classify]
             [clojure.walk :as walk]))
 
 (def moves

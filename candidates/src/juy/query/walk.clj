@@ -1,4 +1,4 @@
-(ns gia.query.walk
+(ns jai.query.walk
   (:require [rewrite-clj.zip :as z]))
 
 (defn prewalk

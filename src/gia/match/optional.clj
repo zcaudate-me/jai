@@ -1,4 +1,4 @@
-(ns gia.match.optional
+(ns jai.match.optional
   (:require [clojure.walk :as walk]))
 
 (defn expand-meta

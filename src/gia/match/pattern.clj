@@ -1,6 +1,6 @@
-(ns gia.match.pattern
+(ns jai.match.pattern
   (:require  [hara.common.checks :refer [hash-map?]]
-             [gia.match regex fn [optional :as optional] [eval :as eval]]
+             [jai.match regex fn [optional :as optional] [eval :as eval]]
              [clojure.core.match :as match]
              [clojure.walk :as walk]))
 

@@ -1,4 +1,4 @@
-(ns gia.match.eval
+(ns jai.match.eval
   (:require [clojure.core.match :as match]))
 
 (defrecord EvaluationPattern [expression])

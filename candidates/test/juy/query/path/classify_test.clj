@@ -1,8 +1,8 @@
-(ns gia.query.path.classify-test
+(ns jai.query.path.classify-test
   (:use midje.sweet)
-  (:require [gia.query.path.classify :refer :all]))
+  (:require [jai.query.path.classify :refer :all]))
 
-{:refer gia.query.path.classify/normalise-meta :added "0.1"}
+{:refer jai.query.path.classify/normalise-meta :added "0.1"}
 (fact "converts a symbol to have seperated meta tags"
   (meta (normalise-meta '^:? _))
   => {:? true}
@@ -11,7 +11,7 @@
   => {:? true, :$ true, :# true})
 
 
-{:refer gia.query.path.classify/classify :added "0.1"}
+{:refer jai.query.path.classify/classify :added "0.1"}
 (fact "converts a vector into a map of elements"
 
   (classify '[defn])

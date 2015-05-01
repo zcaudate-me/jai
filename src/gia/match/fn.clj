@@ -1,4 +1,4 @@
-(ns gia.match.fn
+(ns jai.match.fn
   (:require [clojure.core.match :as match]))
 
 (defmethod match/emit-pattern clojure.lang.Fn

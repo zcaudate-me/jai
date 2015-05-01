@@ -1,4 +1,4 @@
-(ns gia.query.path.classify
+(ns jai.query.path.classify
   (:require [clojure.string :as string]))
 
 (defn assoc-non-empty

@@ -1,6 +1,6 @@
-(ns gia.match.set-test
+(ns jai.match.set-test
   (:use midje.sweet)
-  (:require  [gia.match.pattern :refer :all]
+  (:require  [jai.match.pattern :refer :all]
              [clojure.core.match :as match]))
 
 

@@ -1,18 +1,18 @@
-(ns gia.query-test
+(ns jai.query-test
   (:use midje.sweet)
   (:require [rewrite-clj.zip :as z]
-            [gia.query :refer :all]
-            [gia.query.path :as path]))
+            [jai.query :refer :all]
+            [jai.query.path :as path]))
 
-^{:refer gia.query/select :added "0.1"}
+^{:refer jai.query/select :added "0.1"}
 (fact "select code elements that follow the path pattern"
-  (->> (select (z/of-file "src/gia/query/pattern/fn.clj")
+  (->> (select (z/of-file "src/jai/query/pattern/fn.clj")
                '[defmethod [^:# _ _ |]])
        
        (map z/sexpr))
   => '(match/emit-pattern match/to-source match/groupable?)
 
-  (->> (select (z/of-file "src/gia/query/pattern/fn.clj")
+  (->> (select (z/of-file "src/jai/query/pattern/fn.clj")
                '[defmethod [^:# _ _ _ _ |]])
        
        (map z/sexpr))
@@ -20,18 +20,18 @@
 
 
 (comment
-  ($ "src/gia/query/pattern/fn.clj"
+  ($ "src/jai/query/pattern/fn.clj"
      [defmethod [_ | ^:$ _]])
 
-  ($ "src/gia/query/pattern/fn.clj"
+  ($ "src/jai/query/pattern/fn.clj"
      [defmethod [^:# _ _]])
   => (match/emit-pattern match/to-source match/groupable?)
 
-  ($ "src/gia/query/pattern/fn.clj"
+  ($ "src/jai/query/pattern/fn.clj"
      [(defmethod _ [clojure.lang.Fn clojure.lang.Fn] & _)
       [_ | :1 ^:$ _]])
 
-  ($ "src/gia/query/pattern/fn.clj"
+  ($ "src/jai/query/pattern/fn.clj"
      [(defmethod _ [clojure.lang.Fn clojure.lang.Fn] & _)
       [^:# _ _]])
   (match/groupable?)

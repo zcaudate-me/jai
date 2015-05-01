@@ -1,8 +1,8 @@
-(ns gia.query.pattern.path-test
+(ns jai.query.pattern.path-test
   (:use midje.sweet)
-  (:require [gia.query.path :refer :all]
-            [gia.query.match :as match]
-            [gia.query.walk :as walk]
+  (:require [jai.query.path :refer :all]
+            [jai.query.match :as match]
+            [jai.query.walk :as walk]
             [rewrite-clj.zip :as z]))
 
 (def example
