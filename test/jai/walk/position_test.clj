@@ -1,8 +1,8 @@
-(ns jai.walk-test
+(ns jai.walk.position-test
   (:use midje.sweet)
   (:require [rewrite-clj.zip :as source]
             [clojure.zip :as pattern]
-            [jai.walk :refer :all]))
+            [jai.walk.position :refer :all]))
 
 (fact "sees if the node fits the expression"
   (fit-sexpr 'defn 'defn)

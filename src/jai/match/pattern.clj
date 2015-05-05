@@ -18,7 +18,7 @@
         (#{'& '_} template)        template
         (vector? template)         (vec (map transform-pattern template))
         (set? template)            (let [pats (map transform-pattern template)
-                                         pats (if (empty? pats) [#'none?] pats)]
+                                         pats (if (empty? pats) [#'none] pats)]
                                      (apply list :or pats))
         (hash-map? template)  (->> (map (fn [[k v]]
                                       [(transform-pattern k) (transform-pattern v)]) template)

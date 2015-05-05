@@ -1,8 +1,8 @@
-(ns jai.walk-advanced-test
+(ns jai.walk.position-advanced-test
   (:use midje.sweet)
   (:require [rewrite-clj.zip :as source]
             [clojure.zip :as pattern]
-            [jai.walk :refer :all]))
+            [jai.walk.position :refer :all]))
 
 (fact "Some advanced uses of add"
   (-> (walk (source/of-string "(defn hello [a] (if (not (nil? a)) (println (str \"Hello \" a))))")

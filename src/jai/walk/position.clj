@@ -1,4 +1,4 @@
-(ns jai.walk
+(ns jai.walk.position
   (:require [rewrite-clj.zip :as source]
             [clojure.zip :as pattern]
             [jai.common :refer [any none]]
