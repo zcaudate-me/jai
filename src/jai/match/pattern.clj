@@ -2,13 +2,10 @@
   (:require  [hara.common.checks :refer [hash-map?]]
              [jai.match regex fn [optional :as optional] [eval :as eval]]
              [clojure.core.match :as match]
-             [clojure.walk :as walk]))
+             [clojure.walk :as walk]
+             [jai.common :refer [any none]]))
 
 (defn lazy-seq? [x] (instance? clojure.lang.LazySeq x))
-
-(defn any? [x] true)
-
-(defn none? [x] false)
 
 (defn transform-pattern
   {:added "0.1"}
