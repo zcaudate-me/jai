@@ -1,7 +1,7 @@
 (ns jai.walk.position
   (:require [rewrite-clj.zip :as source]
             [clojure.zip :as pattern]
-            [jai.common :refer [any none]]
+            [jai.common :refer [any none] :as common]
             [clojure.set :as set]))
 
 (defn pattern-zip
@@ -69,6 +69,7 @@
 (defn walk-horizontal [{:keys [level backtrack current] :as state}]
   (let [sexpr (-> current :source source/sexpr)
         pnode (-> current :pattern pattern/node)
+        pnode (common/expand-meta pnode)
         {optional? :?
          insert?   :+
          exact?    :&
