@@ -3,7 +3,6 @@
   (:require  [jai.match.pattern :refer :all]
              [clojure.core.match :as match]))
 
-
 (fact "make sure that sets are working properly"
   (transform-pattern #{1 2 3})
   => '(:or 1 3 2)
@@ -24,4 +23,11 @@
   => true
   
   ((pattern-fn '#{}) 'defn)
-  => false)
+  => false
+
+  ((pattern-fn #{1 2 3}) #{1 2 3})
+  => false
+
+  ((pattern-fn ^:& #{1 2 3}) #{1 2 3})
+  => true
+  )

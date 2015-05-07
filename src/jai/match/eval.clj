@@ -19,5 +19,5 @@
 
 (defmethod match/groupable? [EvaluationPattern EvaluationPattern]
   [a b]
-  (= (:template a)
-     (:template b)))
+  (= (:expression a)
+     (:expression b)))

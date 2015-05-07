@@ -1,17 +1,13 @@
 (ns jai.match.optional
-  (:require [clojure.walk :as walk]))
+  (:require [jai.match.common :as common]))
 
-(defn expand-meta
+(defn tag-meta
   [ele out]
   (let [mele (meta ele)]
-    (cond (:%? mele)
-          (expand-meta (with-meta ele (-> (dissoc mele :%?)
-                                          (assoc :% true :? true)))
-                       out)
-          (:? mele)
+    (cond (:? mele)
           (do (swap! out update-in [:?] inc)
               (with-meta ele (assoc mele :? (:? @out))))
-
+          
           :else ele)))
 
 (defn remove-element [ele combo]
@@ -22,16 +18,18 @@
     ele))
 
 (defn remove-nulls [ele]
-  (cond (list? ele) (filter #(not= ::null %) ele)
-        (vector? ele) (filterv #(not= ::null %) ele)
+  (cond (list? ele)   (with-meta (apply list (filter #(not= ::null %) ele))
+                        (meta ele))
+        (vector? ele) (with-meta (filterv #(not= ::null %) ele)
+                        (meta ele))
         :else ele))
 
 (defn pattern-seq [template]
   (let [out      (atom {:? -1})
-        template (walk/postwalk #(expand-meta % out) template)
+        template (common/prewalk #(tag-meta % out) template)
         combos   (range (bit-shift-left 1 (inc (:? @out))))]
-    (->> template
-         (walk/postwalk #(remove-element % combo))
-         (walk/prewalk remove-nulls)
-         (for [combo combos])
-         (distinct))))
+    (distinct
+     (for [combo combos]
+       (->> template
+            (common/prewalk #(remove-element % combo))
+            (common/prewalk remove-nulls))))))
