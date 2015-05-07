@@ -18,7 +18,11 @@
         (#{'(quote &)
            '(quote _)} template)    template
         (or (lazy-seq? template)
-            (list? template))      (list (apply list (map transform-pattern template)) :seq)    
+            (list? template))      (cond (empty? template)
+                                         (actual/actual-pattern template)
+
+                                         :else
+                                         (list (apply list (map transform-pattern template)) :seq))    
         (#{'& '_} template)        template
         (vector? template)         (vec (map transform-pattern template))
         (set? template)            (let [pats (map transform-pattern template)
@@ -43,10 +47,17 @@
                        ~match-form))]
     (eval all-fn)))
 
-(defn pattern-fn [template]
+(defn pattern-matches [template]
   (let [all-fns (->> template
                      (optional/pattern-seq)
-                     (mapv pattern-single-fn))]
+                     (mapv (juxt identity pattern-single-fn)))]
     (fn [form]
-      (or (some #(% form) all-fns)
-          false))))
+      (or (mapcat (fn [[template f]]
+                    (if (f form) [template])) all-fns)
+          []))))
+
+(defn pattern-fn [template]
+  (fn [value]
+    (-> ((pattern-matches template) value)
+        empty?
+        not)))

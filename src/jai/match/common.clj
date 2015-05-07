@@ -30,3 +30,37 @@
 (defn prewalk
   [f form]
   ((wrap-keep-meta walk/walk) (partial prewalk f) identity (f form)))
+
+(defn remove-null [ele]
+  (cond (list? ele)   (with-meta (apply list (filter #(not= ::null %) ele))
+                        (meta ele))
+        (vector? ele) (with-meta (filterv #(not= ::null %) ele)
+                        (meta ele))
+        :else ele))
+
+(defn mark-null [pred]
+  (fn [ele]
+    (if (pred ele) ::null ele)))
+
+(defn remove-items [pattern pred]
+  (->> pattern
+       (prewalk (mark-null pred))
+       (prewalk remove-null)))
+
+(defn find-index
+  ([pred seq]
+   (find-index pred seq 0))
+  ([pred [x & more :as seq] idx]
+   (cond (empty? seq)
+         nil
+         
+         (pred x)
+         idx
+
+         :else
+         (recur pred more (inc idx)))))
+
+(defn finto [to from]
+  (cond (list? to)
+        (into to (reverse from))
+        :else (into to from)))

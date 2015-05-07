@@ -29,5 +29,4 @@
   => false
 
   ((pattern-fn ^:& #{1 2 3}) #{1 2 3})
-  => true
-  )
+  => true)
