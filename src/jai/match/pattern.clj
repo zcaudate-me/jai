@@ -2,9 +2,9 @@
   (:require  [hara.common.checks :refer [hash-map?]]
              [jai.match regex fn
               [actual :as actual]
-              [common :as common]
               [eval :as eval]
               [optional :as optional]]
+             [jai.common :as common]
              [clojure.core.match :as match]
              [clojure.walk :as walk]))
 

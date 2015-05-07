@@ -1,5 +1,5 @@
 (ns jai.match.optional
-  (:require [jai.match.common :as common]))
+  (:require [jai.common :as common]))
 
 (defn tag-meta
   [ele out]
@@ -21,4 +21,4 @@
                           (bit-shift-right num)
                           (mod 2)
                           (= 0)))]
-         (common/remove-items pattern hide?))))))
+         (common/remove-items hide? pattern))))))

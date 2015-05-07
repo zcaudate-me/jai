@@ -1,4 +1,4 @@
-(ns jai.match.common
+(ns jai.common
   (:require [clojure.string :as string]
             [clojure.walk :as walk]))
 
@@ -18,6 +18,12 @@
              (zipmap (repeat true))
              (select-keys [:% :? :& :- :+])))
        (with-meta ele)))
+
+ (defn cursor? [ele] (= '| ele))
+
+ (defn insertion? [ele] (-> ele meta :+))
+
+ (defn deletion? [ele] (-> ele meta :-))
 
 (defn wrap-keep-meta [f]
   (fn [inner outer form]
@@ -42,23 +48,34 @@
   (fn [ele]
     (if (pred ele) ::null ele)))
 
-(defn remove-items [pattern pred]
+(defn remove-items [pred pattern]
   (->> pattern
        (prewalk (mark-null pred))
        (prewalk remove-null)))
+
+(defn prepare-deletion [pattern]
+  (->> pattern
+       (remove-items cursor?)
+       (remove-items insertion?)))
+
+(defn prepare-insertion [pattern]
+ (->> pattern
+      (remove-items cursor?)
+      (remove-items deletion?)))
+
+(defn prepare-query [pattern]
+ (->> pattern
+      (remove-items cursor?)
+      (remove-items deletion?)
+      (remove-items insertion?)))
 
 (defn find-index
   ([pred seq]
    (find-index pred seq 0))
   ([pred [x & more :as seq] idx]
-   (cond (empty? seq)
-         nil
-         
-         (pred x)
-         idx
-
-         :else
-         (recur pred more (inc idx)))))
+   (cond (empty? seq) nil
+         (pred x)     idx
+         :else (recur pred more (inc idx)))))
 
 (defn finto [to from]
   (cond (list? to)
