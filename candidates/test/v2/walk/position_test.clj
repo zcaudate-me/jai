@@ -4,6 +4,7 @@
             [clojure.zip :as pattern]
             [jai.walk.position :refer :all]))
 
+^{:refer jai.walk.position/fit-sexpr :added "0.2"}
 (fact "sees if the node fits the expression"
   (fit-sexpr 'defn 'defn)
   => true

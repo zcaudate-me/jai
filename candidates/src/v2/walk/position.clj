@@ -95,7 +95,7 @@
           (and (or (list? pnode) (vector? pnode))
                (not (empty? pnode)))
           (let [{:keys [current backtrack] :as result}
-                (walk-down (merge state {:current {:source  (source/down (:source current))
+                (walk-down (merge state {:current {:source  (source/down  (:source current))
                                                    :pattern (pattern/down (:pattern current))}
                                          :previous current
                                          :backtrack (cons :up backtrack)}))]
@@ -109,7 +109,7 @@
             (cond fit?
                   (if remove?
                     (walk-remove state)
-                    (merge state {:current {:source  (source/right (:source current))
+                    (merge state {:current {:source  (source/right  (:source current))
                                             :pattern (pattern/right (:pattern current))}
                                   :previous current
                                   :backtrack (cons :left backtrack)}))
