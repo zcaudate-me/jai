@@ -133,7 +133,7 @@
             (compile-section direction i section))
           nil sections))
 
-(defn select [zloc selectors]
+(defn jai [zloc selectors]
   (let [selectors  (expand-all-metas selectors)
         [cidx ctype cform :as cursor]     (cursor-info selectors)
         qselectors (mapv (fn [ele]
@@ -158,11 +158,15 @@
     @atm)))
 
 (defmacro $ [context selectors]
-  `(select ~context (quote ~selectors)))
+  `(jai ~context (quote ~selectors)))
+
 
 (comment
-  (jai nil '[d :* (defn ^:?&- _ | & _)])
-  (jai nil '[d :* | (defn & _)])
+  (require '[rewrite-clj.zip :as z])
+
+  
+  (jai  '[d :* (defn ^:?&- _ | & _)])
+  (jai (z/of-string "(defn hello)") '[(defn | & _)])
 
 
   (potential-cursors '[(defn ^:?& _ | & _)])
