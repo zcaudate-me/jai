@@ -133,7 +133,7 @@
             (compile-section direction i section))
           nil sections))
 
-(defn jai [zloc selectors]
+(defn match [selectors]
   (let [selectors  (expand-all-metas selectors)
         [cidx ctype cform :as cursor]     (cursor-info selectors)
         qselectors (mapv (fn [ele]
@@ -147,6 +147,10 @@
                          (compile-submap :up up)
                          (compile-submap :down down))
         match-fn (match/compile-matcher match-map)]
+    [match-fn cursor]))
+
+(defn select [zloc selectors]
+  (let [[match-fn [cidx ctype cform]] (match selectors)]
       (let [atm  (atom [])]
         (query/matchwalk zloc
                          [match-fn]
@@ -158,20 +162,21 @@
     @atm)))
 
 (defmacro $ [context selectors]
-  `(jai ~context (quote ~selectors)))
+  `(map z/sexpr (select ~context (quote ~selectors))))
 
 
 (comment
   (require '[rewrite-clj.zip :as z])
 
   
-  (jai  '[d :* (defn ^:?&- _ | & _)])
-  (jai (z/of-string "(defn hello)") '[(defn | & _)])
+  (select (z/of-string "(defn hello)") '[(defn ^:?- _ | & _)])
+  ($ (z/of-string "(defn hello)") [(defn | & _)])
 
+  (select (z/of-file ))
 
-  (potential-cursors '[(defn ^:?& _ | & _)])
+  (cursor-info '[(defn ^:?& _ | & _)])
 
-  (potential-cursors (expand-all-metas '[(defn ^:?& _ | & _)]))
+  (cursor-info (expand-all-metas '[(defn ^:?& _ | & _)]))
 
   (potential-cursors (expand-all-metas '[(defn & _)]))
 

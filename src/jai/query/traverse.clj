@@ -3,7 +3,8 @@
             [clojure.zip :as pattern]
             [jai.match.pattern :refer [pattern-matches]]
             [jai.match.optional :as optional]
-            [jai.common :as common]))
+            [jai.common :as common]
+            [clojure.walk :as walk]))
 
 (defrecord Position [source pattern op]
   Object
@@ -26,8 +27,10 @@
   (fn [{:keys [source] :as pos}]
     (if (not= :meta (source/tag source))
       (f pos)
-      (let [npos (f (assoc pos :source (-> source source/down source/right)))]
-        (assoc npos :source (-> (:source npos) source/up))))))
+      (let [npos   (f (assoc pos :source (-> source source/down source/right)))]
+        (if (:end npos)
+          npos
+          (assoc npos :source (-> (:source npos) source/up)))))))
 
 (defn wrap-delete-next [f]
   (fn [{:keys [source pattern next] :as pos}]
@@ -99,7 +102,7 @@
                             :pattern npattern)
                      (dissoc :next)))
 
-              npattern
+              (and npattern (not= '& (pattern/node npattern)))
               (let [inserts (->> (iterate pattern/right npattern)
                                  (take-while identity)
                                  (map pattern/node))
@@ -195,7 +198,7 @@
   (let [sexpr (source/sexpr source)
         pnode (pattern/node pattern)]
     (cond (= '| pnode)
-          (assoc pos :end true)
+          ((:cursor-level op) (assoc pos :end true))
           
           (= '& pnode)
           ((:cursor-level op) (assoc pos
@@ -213,18 +216,31 @@
 
           :else
           ((:cursor-level op) (assoc pos :next true)))))
-       
+
+(defn count-elements [pattern]
+  (let [sum (atom 0)]
+    (walk/postwalk (fn [x] (swap! sum inc))
+                  pattern)
+    @sum))
+
 (defn traverse [source pattern]
   (let [pseq    (optional/pattern-seq pattern)
         lookup  (->> pseq
                      (map (juxt common/prepare-deletion
                                 identity))
                      (into {}))
-        p-del   (->> (source/sexpr source)
-                     ((pattern-matches (common/prepare-deletion pattern)))
-                    (first))
+        p-dels   (->> (source/sexpr source)
+                      ((pattern-matches (common/prepare-deletion pattern))))
+        p-del   (case  (count p-dels)
+                  0 (throw (ex-info "Needs to have a match."
+                                    {:matches p-dels
+                                     :source (source/sexpr source)
+                                     :pattern pattern}))
+                  1 (first p-dels)
+                  (->> p-dels
+                       (sort-by count-elements)
+                       (last)))
         p-match (get lookup p-del)
-        
         p-ins   (common/prepare-insertion p-match)
         op-del  {:delete-form  (wrap-meta traverse-delete-form)
                  :delete-level (wrap-delete-next traverse-delete-level)
@@ -234,6 +250,7 @@
                                     :pattern (pattern-zip p-del)
                                     :op op-del})
                     ((:delete-form op-del)))
+        
         op-ins  {:insert-form  (wrap-meta traverse-insert-form)
                  :insert-level (wrap-insert-next traverse-insert-level)
                  :insert-node  traverse-insert-node}

@@ -56,8 +56,26 @@
    (traverse (source/of-string "(defn hello)")
              '(defn ^{:? true :% true :- true} symbol? | ^:+ [])))
   => []
+
+  (source/sexpr
+   (traverse (source/of-string "(defn hello \"world\" {:a 1} [])")
+             '(defn ^:% symbol?
+                 ^{:? true :% true :- true} string?
+                 ^{:? true :% true :- true} map?
+                 ^:% vector? & _)))
+  => '(defn hello [])
   
   (source/sexpr
    (traverse (source/of-string "(defn hello [] (+ 1 1))")
              '(defn _ _ (+ | 1 & _))))
-  => 1)
+  => 1
+
+  (source/sexpr
+   (traverse (source/of-string "(defn hello [] (+ 1 1))")
+             '(#{defn} | & _ )))
+  => 'hello
+
+  (source/sexpr
+   (traverse (source/of-string "(fact \"hello world\")")
+             '(fact | & _ )))
+  => "hello world")
