@@ -113,17 +113,35 @@
               :else (throw (ex-info "keys can only be either :file or :string" context)))
         :else (throw (ex-info "context can only be a string or map" {:value context}))))
 
+(defn wrap-vec [f]
+  (fn [res opts]
+    (if (vector? res)
+      (mapv #(f % opts) res)
+      (f res opts))))
+
+(defn wrap-return [f]
+  (fn [res {:keys [type] :as opts}]
+    (case type
+      :string (source/string (f res opts))
+      :zip    (f res opts)
+      :sexpr  (source/sexpr (f res opts)))))
+
 (defn $* [context path & [func? opts?]]
   (let [context (query-context context)
         [func opts] (cond (nil? func?) [nil opts?]
                           (map? func?) [nil func?]
-                          :else [func? opts?])]
-    (cond func
-          (modify context path func)
-
-          :else
-          (->> (select context path)
-               (map source/sexpr)))))
+                          :else [func? opts?])
+        results     (cond func
+                          (modify context path func)
+                          
+                          :else
+                          (select context path))
+        opts         (if func
+                       (merge opts {:type :zip})
+                       (merge opts {:type :sexpr}))]
+    ((-> (fn [res opts] res)
+          wrap-return
+          wrap-vec) results opts)))
 
 (defmacro $
   "select and manipulation of clojure source code
@@ -136,4 +154,3 @@
   {:added "0.2"}
   [context path & args]
   `($* ~context (quote ~path) ~@args))
-
