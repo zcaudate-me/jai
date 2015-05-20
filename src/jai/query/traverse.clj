@@ -24,13 +24,16 @@
               root))
 
 (defn wrap-meta [f]
-  (fn [{:keys [source] :as pos}]
+  (fn [{:keys [source level] :as pos}]
     (if (not= :meta (source/tag source))
       (f pos)
-      (let [npos   (f (assoc pos :source (-> source source/down source/right)))]
+      (let [ppos   (if level (update-in pos [:level] inc) pos)
+            npos   (f (assoc ppos :source (-> source source/down source/right)))]
         (if (:end npos)
           npos
-          (assoc npos :source (-> (:source npos) source/up)))))))
+          (assoc npos
+                 :source (-> (:source npos) source/up)
+                 :level level))))))
 
 (defn wrap-delete-next [f]
   (fn [{:keys [source pattern next] :as pos}]
@@ -90,6 +93,12 @@
           :else
           ((:delete-level op) (assoc pos :next true)))))
 
+
+(defn prep-insert-pattern [pattern]
+  (let [pnode (pattern/node pattern)
+        {evaluate? :%} (meta pnode)]
+    (if evaluate? (eval pnode) (with-meta pnode nil))))
+
 (defn wrap-insert-next [f]
   (fn [{:keys [source pattern next] :as pos}]
     (if-not next
@@ -105,7 +114,7 @@
               (and npattern (not= '& (pattern/node npattern)))
               (let [inserts (->> (iterate pattern/right npattern)
                                  (take-while identity)
-                                 (map pattern/node))
+                                 (map prep-insert-pattern))
                     nsource (reduce source/insert-right source (reverse inserts))]
                 (-> pos
                     (assoc :source  (source/up nsource)
@@ -133,9 +142,10 @@
 
 (defn traverse-insert-node [{:keys [source pattern op] :as pos}]
   ((:insert-level op)
-         (assoc pos
-                :source (source/left (source/insert-left source))
-                :next true)))
+   (let [val (prep-insert-pattern pattern)]
+     (assoc pos
+            :source (source/left (source/insert-left source val))
+            :next true))))
 
 (defn traverse-insert-level [{:keys [source pattern op] :as pos}]
   (let [pnode (pattern/node pattern)
@@ -180,12 +190,14 @@
                   (nil? nsource)
                   (-> pos
                       (assoc :source (source/up source) :pattern (pattern/up pattern))
+                      (update-in [:level] dec)
                       (dissoc :next))))
           :else (f pos))))
 
 (defn traverse-cursor-form [{:keys [source pattern op] :as pos}]
   (let [sexpr (source/sexpr source)
-        pnode (pattern/node pattern)]
+        pnode (pattern/node pattern)
+        pos   (update-in pos [:level] inc)]
     (cond (empty? pnode)
           pos
 
@@ -260,11 +272,12 @@
                     ((:insert-form op-ins)))
         p-cursor (common/remove-items common/deletion? p-match)]
     (if (= p-cursor p-ins)
-      (:source ins-pos)
+      ins-pos
       (let [op-cursor {:cursor-form  (wrap-meta traverse-cursor-form)
                        :cursor-level (wrap-cursor-next traverse-cursor-level)}
             cursor-pos (-> ins-pos
                            (assoc :pattern (pattern-zip p-cursor)
-                                  :op op-cursor)
+                                  :op op-cursor
+                                  :level 0)
                            ((:cursor-form op-cursor)))]
-        (:source cursor-pos)))))
+        cursor-pos))))

@@ -1,186 +1,139 @@
 (ns jai.query
-  (:require [jai.common :as common]
-            [jai.match :as match]
+  (:require [jai.match :as match]
+            [jai.common :as common]
+            [jai.query.compile :as compile]
             [jai.query.traverse :as traverse]
-            [jai.query.walk :as query]
-            [clojure.walk :as walk]))
+            [jai.query.walk :as walk]
+            [rewrite-clj.zip :as source]))
 
-(defn cursor-info [selectors]
-  (let [candidates
-        (->> selectors
-             (keep-indexed
-              (fn [i ele]
-                (cond (= ele '|) [i :cursor]
-                      (and (list? ele)
-                           (not= (common/prepare-query ele)
-                                 ele)) [i :form ele]))))]
-    (case (count candidates)
-      0 (if (list? (last selectors))
-          [(dec (count selectors)) :form (last selectors)]
-          [nil :cursor])
-      1 (let [max      (dec (count selectors))
-              [i type :as candidate] (first candidates)
-              _ (case type
-                  :form   (if (not= i max)
-                            (throw (Exception. "Form should be in the last position of the selectors")))
-                  :cursor (if (= i max)
-                            (throw (Exception. "Cursor cannot be in the last position of the selectors"))))]
-          candidate)
-      (throw (ex-info (format "There should only be one of %s in the path." ) 
-                      {:candidates candidates})))))
-
-(defn expand-all-metas [selectors]
-  (common/prewalk (fn [ele] (if (instance? clojure.lang.IObj ele)
-                              (common/expand-meta ele)
-                              ele))
-                  selectors))
-
-(defn split-path [selectors [idx ctype]]
-  (let [[up down] (cond (nil? idx)
-                        [[] selectors]
-
-                        (= :cursor ctype)
-                        [(reverse (subvec selectors 0 idx))
-                         (subvec selectors (inc idx) (count selectors))]
-
-                        (= :form ctype)
-                        [(reverse (subvec selectors 0 idx))
-                         (subvec selectors idx (count selectors))]
-
-                        :else (throw (Exception. "Should not be here")))]
-    {:up up :down down}))
-
-
-(defn process-special [ele]
-  (if (keyword? ele)
-    (or (if (= :* ele) {:type :multi})
-        (if-let [step (try (Integer/parseInt (name ele))
-                           (catch java.lang.NumberFormatException e))]
-          (if (> step 0)
-            {:type :nth :step step}))
-        (throw (ex-info "Not a valid keyword (either :* or :<natural number>)" {:value ele})))))
-
-(defn process-path
-  ([path] (process-path path []))
-  ([[x y & xs :as more] out]
-   (if-not (empty? more)
-     (let [xmap  (process-special x)
-           xmeta (meta x)
-           ymap  (process-special y)
-           ymeta (meta y)]
-       (cond (and (nil? xmap) (= 1 (count more)))
-             (conj out (merge {:type :step :element x} xmeta))
-             
-             (nil? xmap)
-             (recur (cons y xs)
-                    (conj out (merge {:type :step :element x} xmeta)))
-             
-             (and xmap ymap)    
-             (recur (cons y xs)
-                    (conj out (assoc xmap :element '_)))
-             
-             (and xmap (= 1 (count more)))
-             (conj out (assoc xmap :element '_))
-             
-             :else
-             (recur xs
-                    (conj out (merge (assoc xmap :element y) ymeta)))))
-     out)))
-
-(defn compile-section-base [section]
-  (let [{:keys [element] evaluate? :%} section]
-    (cond evaluate?
-          (compile-section-base (-> section
-                                    (assoc :element (eval element))
-                                    (dissoc :%)))
-
-          (= '_ element)    {:is common/any}
-          (fn? element)     {:is element}
-          (map? element)    (walk/postwalk
-                             (fn [ele]
-                               (cond (:% (meta ele))
-                                     (eval (with-meta ele
-                                             (-> (meta ele)
-                                                 (dissoc :%))))
-                                     :else ele))
-                             element)
-          (list? element)   {:pattern element}
-          (symbol? element) {:form element}
-          :else {:is element})))
-
-(def moves
-  {:step   {:up     :parent
-            :down   :child}
-   :multi  {:up     :ancestor
-            :down   :contains}
-   :nth    {:up     :nth-ancestor
-            :down   :nth-contains}})
-
-(defn compile-section [direction prev {:keys [type step] optional? :? :as section}]
-  (let [base (-> section
-                 compile-section-base)
-        dkey (get-in moves [type direction])
-        current (merge base prev)
-        current (if optional?
-                  {:or #{current (merge {:is common/any} prev)}}
-                  current)]
-    (if (= type :nth)
-      {dkey [step current]}
-      {dkey current})))
-
-(defn compile-submap [direction sections]
-  (reduce (fn [i section]
-            (compile-section direction i section))
-          nil sections))
-
-(defn match [selectors]
-  (let [selectors  (expand-all-metas selectors)
-        [cidx ctype cform :as cursor]     (cursor-info selectors)
-        qselectors (mapv (fn [ele]
-                           (if (list? ele)
-                             (common/prepare-query ele) ele))
-                         selectors)
-        {:keys [up down]}   (split-path qselectors cursor)
-        up (process-path up)
-        [curr & down] (process-path down)
-        match-map (merge (compile-section-base curr)
-                         (compile-submap :up up)
-                         (compile-submap :down down))
-        match-fn (match/compile-matcher match-map)]
-    [match-fn cursor]))
-
-(defn select [zloc selectors]
-  (let [[match-fn [cidx ctype cform]] (match selectors)]
-      (let [atm  (atom [])]
-        (query/matchwalk zloc
-                         [match-fn]
-                         (fn [zloc]
-                           (if (= :form ctype)
-                             (swap! atm conj (traverse/traverse zloc cform))
-                             (swap! atm conj zloc))
-                           zloc))
-    @atm)))
-
-(defmacro $ [context selectors]
-  `(map z/sexpr (select ~context (quote ~selectors))))
-
-
-(comment
-  (require '[rewrite-clj.zip :as z])
-
+(defn match
+  "matches the source code
+  (match (source/of-string \"(+ 1 1)\") '(symbol? _ _))
+  => false
   
-  (select (z/of-string "(defn hello)") '[(defn ^:?- _ | & _)])
-  ($ (z/of-string "(defn hello)") [(defn | & _)])
+  (match (source/of-string \"(+ 1 1)\") '(^:% symbol? _ _))
+  => true
 
-  (select (z/of-file ))
+  (match (source/of-string \"(+ 1 1)\") '(^:%- symbol? _ | _))
+  => true
 
-  (cursor-info '[(defn ^:?& _ | & _)])
+  (match (source/of-string \"(+ 1 1)\") '(^:%+ symbol? _ _))
+  => false"
+  {:added "0.2"}
+  [zloc selector]
+  (let [match-fn (-> selector
+                     (compile/expand-all-metas)
+                     (common/prepare-deletion)
+                     (match/compile-matcher))]
+    (try (match-fn zloc)
+         (catch Throwable t false))))
 
-  (cursor-info (expand-all-metas '[(defn ^:?& _ | & _)]))
+(defn traverse
+  "uses a pattern to traverse as well as to edit the form
+  
+  (source/sexpr
+   (traverse (source/of-string \"^:a (+ () 2 3)\")
+             '(+ () 2 3)))
+  => '(+ () 2 3)
+  
+  (source/sexpr
+   (traverse (source/of-string \"()\")
+             '(^:&+ hello)))
+  => '(hello)
+  
+  (source/sexpr
+   (traverse (source/of-string \"()\")
+             '(+ 1 2 3)))
+  => throws
+  
+  (source/sexpr
+   (traverse (source/of-string \"(defn hello \\\"world\\\" {:a 1} [])\")
+             '(defn ^:% symbol? ^:?%- string? ^:?%- map? ^:% vector? & _)))
+  => '(defn hello [])"
+  {:added "0.2"}
+  [zloc pattern]
+  (let [pattern (compile/expand-all-metas pattern)]
+    (:source (traverse/traverse zloc pattern))))
 
-  (potential-cursors (expand-all-metas '[(defn & _)]))
+(defn select
+  "selects all patterns from a starting point
+  (map source/sexpr
+   (select (source/of-string \"(defn hello [] (if (try))) (defn hello2 [] (if (try)))\")
+           '[defn if try]))
+  => '((defn hello  [] (if (try)))
+       (defn hello2 [] (if (try))))"
+  {:added "0.2"}
+  [zloc selectors]
+  (let [[match-map [cidx ctype cform]] (compile/prepare selectors)
+        match-fn (match/compile-matcher match-map)]
+    (let [atm  (atom [])]
+      (walk/matchwalk zloc
+                      [match-fn]
+                      (fn [zloc]
+                        (swap! atm conj 
+                               (if (= :form ctype)
+                                 (:source (traverse/traverse zloc cform))
+                                 zloc))
+                        zloc))
+      @atm)))
 
-  ($ nil [(defn _ | & _)])
+(defn modify
+  "modifies location given a function
+  (source/root-string
+   (modify (source/of-string \"^:a (defn hello3) (defn hello)\") ['(defn | _)]
+           (fn [zloc]
+             (source/insert-left zloc :hello))))
+  => \"^:a (defn :hello hello3) (defn :hello hello)\""
+  {:added "0.2"}
+  [zloc selectors func]
+  (let [[match-map [cidx ctype cform]] (compile/prepare selectors)
+        match-fn (match/compile-matcher match-map)]
+    (walk/matchwalk zloc
+                    [match-fn]
+                    (fn [zloc]
+                      (if (= :form ctype)
+                        (let [{:keys [level source]} (traverse/traverse zloc cform)
+                              nsource (func source)]
+                          (if (= level 0)
+                            nsource
+                            (nth (iterate source/up nsource) level)))
+                        (func zloc))))))
 
-  (set! *print-meta* (not *print-meta*))
-  )
+(defn query-context [context]
+  (cond (string? context)
+        (source/of-file context)
+        
+        (map? context)
+        (cond (:file context)
+              (source/of-file (:file context))
+
+              (:string context)
+              (source/of-string (:string context))
+
+              :else (throw (ex-info "keys can only be either :file or :string" context)))
+        :else (throw (ex-info "context can only be a string or map" {:value context}))))
+
+(defn $* [context path & [func? opts?]]
+  (let [context (query-context context)
+        [func opts] (cond (nil? func?) [nil opts?]
+                          (map? func?) [nil func?]
+                          :else [func? opts?])]
+    (cond func
+          (modify context path func)
+
+          :else
+          (->> (select context path)
+               (map source/sexpr)))))
+
+(defmacro $
+  "select and manipulation of clojure source code
+  
+  ($ {:string \"(defn hello1) (defn hello2)\"} [(defn _ ^:%+ (keyword \"oeuoeuoe\") )])
+  => '((defn hello1 :oeuoeuoe) (defn hello2 :oeuoeuoe))
+
+  ($ {:string \"(defn hello1) (defn hello2)\"} [(defn _ | ^:%+ (keyword \"oeuoeuoe\") )])
+  => '(:oeuoeuoe :oeuoeuoe)"
+  {:added "0.2"}
+  [context path & args]
+  `($* ~context (quote ~path) ~@args))
+

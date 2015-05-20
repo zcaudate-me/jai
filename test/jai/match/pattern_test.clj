@@ -2,8 +2,7 @@
   (:use midje.sweet)
   (:require [jai.match.pattern :refer :all]))
 
-(set! *print-meta* true)
-
+^{:refer jai.match.pattern/pattern-matches :added "0.2"}
 (fact "pattern"
   ((pattern-matches ()) ())
   => '(())

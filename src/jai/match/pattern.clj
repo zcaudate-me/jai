@@ -47,7 +47,15 @@
                        ~match-form))]
     (eval all-fn)))
 
-(defn pattern-matches [template]
+(defn pattern-matches
+  "pattern
+  ((pattern-matches ()) ())
+  => '(())
+  
+  ((pattern-matches '(^:% symbol? ^:? (+ 1 _ ^:? _))) '(+ (+ 1 2 3)))
+  => '((^{:% true} symbol? ^{:? 0} (+ 1 _ ^{:? 1} _)))"
+  {:added "0.2"}
+  [template]
   (let [all-fns (->> template
                      (optional/pattern-seq)
                      (mapv (juxt identity pattern-single-fn)))]

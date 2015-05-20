@@ -4,60 +4,66 @@
             [clojure.zip :as zip]
             [jai.query.traverse :refer :all]))
 
+^{:refer jai.traverse/traverse-basic :added "0.2"}
+(defn source [pos]
+  (-> pos :source source/sexpr))
+
+^{:refer jai.traverse/traverse-basic :added "0.2"}
 (fact
-  (source/sexpr
+  (source
    (traverse (source/of-string "^:a (+ () 2 3)")
              '(+ () 2 3)))
   => '(+ () 2 3)
   
-  (source/sexpr
+  (source
    (traverse (source/of-string "^:a (hello)")
              '(hello)))
   => '(hello)
   
-  (source/sexpr
+  (source
    (traverse (source/of-string "^:a (hello)")
              '(^:- hello)))
   => ()
   
-  (source/sexpr
+  (source
    (traverse (source/of-string "(hello)")
              '(^:- hello)))
   => ()
   
-  (source/sexpr
+  (source
    (traverse (source/of-string "((hello))")
              '((^:- hello))))
   => '(())
 
   ;; Insertions
-  (source/sexpr
+  (source
    (traverse (source/of-string "()")
              '(^:+ hello)))
   => '(hello)
   
-  (source/sexpr
+  (source
    (traverse (source/of-string "(())")
              '((^:+ hello))))
   => '((hello)))
 
+^{:refer jai.traverse/traverse-advance :added "0.2"}
 (fact
-  (source/sexpr
+  (source
    (traverse (source/of-string "(defn hello)")
              '(defn ^{:? true :% true} symbol? ^:+ [])))
   => '(defn hello [])
   
-  (source/sexpr
+  (source
    (traverse (source/of-string "(defn hello)")
              '(defn ^{:? true :% true :- true} symbol? ^:+ [])))
   => '(defn [])
   
-  (source/sexpr
+  (source
    (traverse (source/of-string "(defn hello)")
              '(defn ^{:? true :% true :- true} symbol? | ^:+ [])))
   => []
 
-  (source/sexpr
+  (source
    (traverse (source/of-string "(defn hello \"world\" {:a 1} [])")
              '(defn ^:% symbol?
                  ^{:? true :% true :- true} string?
@@ -65,17 +71,17 @@
                  ^:% vector? & _)))
   => '(defn hello [])
   
-  (source/sexpr
+  (source
    (traverse (source/of-string "(defn hello [] (+ 1 1))")
              '(defn _ _ (+ | 1 & _))))
   => 1
 
-  (source/sexpr
+  (source
    (traverse (source/of-string "(defn hello [] (+ 1 1))")
              '(#{defn} | & _ )))
   => 'hello
 
-  (source/sexpr
+  (source
    (traverse (source/of-string "(fact \"hello world\")")
              '(fact | & _ )))
   => "hello world")

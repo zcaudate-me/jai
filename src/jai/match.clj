@@ -87,34 +87,29 @@
 
 (defn p-meta
   "checks if meta is the same
-  ((p-meta {:a 1}) (z/of-string \"^{:a 1} defn\"))
+  ((p-meta {:a 1}) (z/down (z/of-string \"^{:a 1} defn\")))
   => true
   
-  ((p-meta {:a 1}) (z/of-string \"^{:a 2} defn\"))
+  ((p-meta {:a 1}) (z/down (z/of-string \"^{:a 2} defn\")))
   => false"
   {:added "0.1"}
   [template]
   (Matcher. (fn [zloc]
-              (-> zloc z/sexpr meta (= template)))))
-
-(defn check-with-meta [f]
-  (fn [zloc]
-    (if (-> zloc z/tag (= :meta))
-      (f (-> zloc z/down z/right))
-      (f zloc))))
+              (let [mloc (z/up zloc)]
+                (and (= :meta (z/tag mloc))
+                     (= (z/sexpr (z/down mloc)) template))))))
 
 (defn p-type
   "check on the type of element
   ((p-type :token) (z/of-string \"defn\"))
   => true
   
-  ((p-type :token) (z/of-string \"^{:a 1} defn\"))
+  ((p-type :token) (-> (z/of-string \"^{:a 1} defn\") z/down z/right))
   => true"
   {:added "0.1"}
   [template]
-  (Matcher. (check-with-meta
-             (fn [zloc]
-               (-> zloc z/tag (= template))))))
+  (Matcher. (fn [zloc]
+              (-> zloc z/tag (= template)))))
 
 (defn p-form
   "checks if it is a form with the symbol as the first element
@@ -133,9 +128,9 @@
   ((p-pattern '(defn ^:% symbol? & _)) (z/of-string \"(defn ^{:a 1} x [])\"))
   => true
 
-  ((p-pattern '(defn ^:% symbol? ^:%? string? [])) (z/of-string \"(defn ^{:a 1} x [])\"))
-  => true
-  "
+  ((p-pattern '(defn ^:% symbol? ^{:% true :? true} string? [])) 
+   (z/of-string \"(defn ^{:a 1} x [])\"))
+  => true"
   {:added "0.1"}
   [template]
   (Matcher. (fn [zloc]
@@ -398,13 +393,6 @@
            (tree-depth-search (dir2 zloc) m-fn level dir1 dir2))))))
 
 (defn p-nth-contains
-  "checks that any element (deeply nested also) of the container matches
-  ((p-contains '=) (z/of-string \"(if (= x y))\"))
-  => true
-
-  ((p-contains 'x) (z/of-string \"(if (= x y))\"))
-  => true"
-  {:added "0.1"}
   [[num template]]
   (let [template (if (symbol? template) {:is template} template)
         m-fn (compile-matcher template)]

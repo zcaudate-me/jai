@@ -10,7 +10,17 @@
           
           :else ele)))
 
-(defn pattern-seq [pattern]
+(defn pattern-seq
+  "generate a sequence of possible matches
+  (pattern-seq '(+ ^:? (1) ^:? (^:? + 2)))
+  => '((+)
+       (+ (1))
+       (+ (2))
+       (+ (1) (2))
+       (+ (+ 2))
+       (+ (1) (+ 2)))"
+  {:added "0.2"}
+  [pattern]
   (let [out      (atom {:? -1})
         pattern (common/prewalk #(tag-meta % out) pattern)
         combos   (range (bit-shift-left 1 (inc (:? @out))))]

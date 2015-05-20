@@ -37,10 +37,10 @@
 
 ^{:refer jai.match/p-meta :added "0.1"}
 (fact "checks if meta is the same"
-  ((p-meta {:a 1}) (z/of-string "^{:a 1} defn"))
+  ((p-meta {:a 1}) (z/down (z/of-string "^{:a 1} defn")))
   => true
   
-  ((p-meta {:a 1}) (z/of-string "^{:a 2} defn"))
+  ((p-meta {:a 1}) (z/down (z/of-string "^{:a 2} defn")))
   => false)
 
 ^{:refer jai.match/p-type :added "0.1"}
@@ -48,7 +48,7 @@
   ((p-type :token) (z/of-string "defn"))
   => true
   
-  ((p-type :token) (z/of-string "^{:a 1} defn"))
+  ((p-type :token) (-> (z/of-string "^{:a 1} defn") z/down z/right))
   => true)
 
 ^{:refer jai.match/p-form :added "0.1"}
