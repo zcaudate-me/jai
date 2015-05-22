@@ -230,6 +230,6 @@
         up (process-path up)
         [curr & down] (process-path down)
         match-map (merge (compile-section-base curr)
-                         (compile-submap :up up)
+                         (compile-submap :up (reverse up))
                          (compile-submap :down (reverse down)))]
     [match-map cursor]))

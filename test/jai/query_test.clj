@@ -59,8 +59,18 @@
 ^{:refer jai.query/$ :added "0.2"}
 (fact "select and manipulation of clojure source code"
   
-  ($ {:string "(defn hello1) (defn hello2)"} [(defn _ ^:%+ (keyword "oeuoeuoe") )])
-  => '((defn hello1 :oeuoeuoe) (defn hello2 :oeuoeuoe))
+  ($ {:string "(defn hello1) (defn hello2)"} [(defn _ ^:%+ (keyword "oeuoeuoe"))])
+  => '[(defn hello1 :oeuoeuoe) (defn hello2 :oeuoeuoe)]
 
   ($ {:string "(defn hello1) (defn hello2)"} [(defn _ | ^:%+ (keyword "oeuoeuoe") )])
-  => '(:oeuoeuoe :oeuoeuoe))
+  => '[:oeuoeuoe :oeuoeuoe]
+
+  (->> ($ {:string "(defn hello1) (defn hello2)"}
+          [(defn _ | ^:%+ (keyword "oeuoeuoe"))]
+          {:return :string})
+       )
+  => [":oeuoeuoe" ":oeuoeuoe"]
+  
+  
+  ($ (source/of-string "a b c") [{:is a}])
+  => '[a])

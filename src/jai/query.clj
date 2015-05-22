@@ -94,23 +94,30 @@
                       (if (= :form ctype)
                         (let [{:keys [level source]} (traverse/traverse zloc cform)
                               nsource (func source)]
-                          (if (= level 0)
+                          
+                          (if (or (nil? level) (= level 0))
                             nsource
                             (nth (iterate source/up nsource) level)))
                         (func zloc))))))
 
-(defn query-context [context]
+(defn context-zloc [context]
   (cond (string? context)
-        (source/of-file context)
+        (query-context (source/of-file context))
+
+        (vector? context) context
         
         (map? context)
-        (cond (:file context)
-              (source/of-file (:file context))
+        (-> (cond (:source context)
+                  (:source context)
+                  
+                  (:file context)
+                  (source/of-file (:file context))
+                  
 
-              (:string context)
-              (source/of-string (:string context))
+                  (:string context)
+                  (source/of-string (:string context))
 
-              :else (throw (ex-info "keys can only be either :file or :string" context)))
+                  :else (throw (ex-info "keys can only be either :file or :string" context))))
         :else (throw (ex-info "context can only be a string or map" {:value context}))))
 
 (defn wrap-vec [f]
@@ -120,25 +127,24 @@
       (f res opts))))
 
 (defn wrap-return [f]
-  (fn [res {:keys [type] :as opts}]
-    (case type
+  (fn [res {:keys [return] :as opts}]
+    (case return
       :string (source/string (f res opts))
-      :zip    (f res opts)
+      :zipper (f res opts)
       :sexpr  (source/sexpr (f res opts)))))
 
-(defn $* [context path & [func? opts?]]
-  (let [context (query-context context)
+(defn $*
+  [context path & [func? opts?]]
+  (let [zloc (context-zloc context)
         [func opts] (cond (nil? func?) [nil opts?]
                           (map? func?) [nil func?]
                           :else [func? opts?])
         results     (cond func
-                          (modify context path func)
+                          (modify zloc path func)
                           
                           :else
-                          (select context path))
-        opts         (if func
-                       (merge opts {:type :zip})
-                       (merge opts {:type :sexpr}))]
+                          (select zloc path))
+        opts         (merge {:return (if func :zipper :sexpr)} opts)]
     ((-> (fn [res opts] res)
           wrap-return
           wrap-vec) results opts)))
