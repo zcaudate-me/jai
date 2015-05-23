@@ -51,9 +51,16 @@
              '(defn ^:% symbol? ^:?%- string? ^:?%- map? ^:% vector? & _)))
   => '(defn hello [])"
   {:added "0.2"}
-  [zloc pattern]
-  (let [pattern (compile/expand-all-metas pattern)]
-    (:source (traverse/traverse zloc pattern))))
+  ([zloc pattern]
+   (let [pattern (compile/expand-all-metas pattern)]
+     (:source (traverse/traverse zloc pattern))))
+  ([zloc pattern func]
+   (let [pattern (compile/expand-all-metas pattern)
+         {:keys [level source]} (traverse/traverse zloc pattern)
+         nsource (func source)]
+     (if (or (nil? level) (= level 0))
+       nsource
+       (nth (iterate source/up nsource) level)))))
 
 (defn select
   "selects all patterns from a starting point
@@ -102,7 +109,7 @@
 
 (defn context-zloc [context]
   (cond (string? context)
-        (query-context (source/of-file context))
+        (source/of-file context)
 
         (vector? context) context
         
@@ -152,11 +159,21 @@
 (defmacro $
   "select and manipulation of clojure source code
   
-  ($ {:string \"(defn hello1) (defn hello2)\"} [(defn _ ^:%+ (keyword \"oeuoeuoe\") )])
-  => '((defn hello1 :oeuoeuoe) (defn hello2 :oeuoeuoe))
+  ($ {:string \"(defn hello1) (defn hello2)\"} [(defn _ ^:%+ (keyword \"oeuoeuoe\"))])
+  => '[(defn hello1 :oeuoeuoe) (defn hello2 :oeuoeuoe)]
 
   ($ {:string \"(defn hello1) (defn hello2)\"} [(defn _ | ^:%+ (keyword \"oeuoeuoe\") )])
-  => '(:oeuoeuoe :oeuoeuoe)"
+  => '[:oeuoeuoe :oeuoeuoe]
+
+  (->> ($ {:string \"(defn hello1) (defn hello2)\"}
+          [(defn _ | ^:%+ (keyword \"oeuoeuoe\"))]
+          {:return :string})
+       )
+  => [\":oeuoeuoe\" \":oeuoeuoe\"]
+  
+  
+  ($ (source/of-string \"a b c\") [{:is a}])
+  => '[a]"
   {:added "0.2"}
   [context path & args]
   `($* ~context (quote ~path) ~@args))

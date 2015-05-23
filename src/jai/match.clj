@@ -46,8 +46,8 @@
                 (-> zloc z/sexpr (= template))))))
 
 (defn p-equal-loop [expr template]
-  (and (= (meta expr) (meta template))
-       (= (type expr) (type template))
+  (and (or (= (meta expr) (meta template))
+           (and (empty? (meta expr)) (empty? (meta template))))
        (cond (or (list? expr) (vector? expr))
              (and (= (count expr) (count template))
                   (every? true? (map p-equal-loop expr template)))
@@ -60,6 +60,7 @@
 
              (map? expr)
              (and (= (count expr) (count template))
+                  
                   (every? true? (map p-equal-loop
                                      (sort (keys expr))
                                      (sort (keys template))))
@@ -200,7 +201,7 @@
                         :or           (apply p-or (map compile-matcher template))
                         :equal        (p-equal v)
                         :type         (p-type v)
-                        :meta         (p-type v)
+                        :meta         (p-meta v)
                         :form         (p-form v)
                         :pattern      (p-pattern v)
                         :code         (p-code v)

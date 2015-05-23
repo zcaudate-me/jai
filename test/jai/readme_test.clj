@@ -230,9 +230,16 @@ the workaround is to use the `^:%+` meta and write the object as an expression t
   => ["(defn add [x y] (+ x y))"])
 
 
-[[:chapter {:title "Working with Rewrite"}]]
+[[:chapter {:title "Utilities"}]]
 
-"While the `$` macro is provided for global searches within a file, the `traverse` function is provided to work with the zipper library for traversal/manipulation of a form."
+"These utilities are specially designed to work with `rewrite-clj`;"
+
+(comment
+  (use rewrite-clj.zip :as z))
+
+[[:section {:title "traverse"}]]
+
+"While the `$` macro is provided for global searches within a file, `traverse` is provided to work with the zipper library for traversal/manipulation of a form."
 
 (fact
   (-> (z/of-string "(defn add \"adding numbers\" {:added \"0.1\"} [x y] (+ x y))")
@@ -241,3 +248,399 @@ the workaround is to use the `^:%+` meta and write the object as an expression t
       (z/up)
       (z/sexpr))
   => '(defn add [x y] (prn "add") (+ x y)))
+
+"`traverse` can also be given a function as the third argument. This will perform some action on the location given by the cursor and then jump out again:"
+
+(fact
+  (-> (z/of-string "(defn add \"adding numbers\" {:added \"0.1\"} [x y] (+ x y))")
+      (traverse '(defn ^:% symbol? ^:%?- string? ^:%?- map? ^:% vector? | & _)
+                (fn [zloc] (z/insert-left zloc '(prn "add"))))
+      (z/sexpr))
+  => '(defn add [x y] (prn "add") (+ x y)))
+
+"`traverse` works with metas as well, which is harder to work with using just `rewrite-clj`"
+
+(fact
+  (-> (z/of-string "(defn add [x y] ^{:text 0} (+ (+ x 1) y 1))")
+      (traverse '(defn _ _ (+ (+ | x 1) y 1))
+                (fn [zloc] (z/insert-left zloc '(prn "add"))))
+      (z/sexpr))
+  => '(defn add [x y] (+ (+ (prn "add") x 1) y 1)))
+
+[[:section {:title "match"}]]
+
+"a map-based syntax is provided for matching:"
+
+(fact
+
+  (-> (z/of-string "(if true (+ 1 2) (+ 1 1))")
+      (match 'if))
+  => true
+
+  (-> (z/of-string "(if true (+ 1 2) (+ 1 1))")
+      (match {:form 'if}))
+  => true
+  
+  (-> (z/of-string "(if true (+ 1 2) (+ 1 1))")
+      (match {:is list?}))
+  => true
+
+  (-> (z/of-string "(if true (+ 1 2) (+ 1 1))")
+      (match {:child {:is true}}))
+  => true
+
+  (-> (z/of-string "(if true (+ 1 2) (+ 1 1))")
+      (match {:child {:form '+}}))
+  => true)
+
+"there are many options for matches:
+
+ - `:fn`           match on checking function
+ - `:is`           match on value or checking function
+ - `:or`           match two options, done using a set
+ - `:equal`        match on equivalence
+ - `:type`         match on `rewrite-clj` type
+ - `:meta`         match on meta tag
+ - `:form`         match on first element of a form
+ - `:pattern`      match on a pattern
+ - `:code`         match on code
+
+ - `:parent`       match on direct parent of element
+ - `:child`        match on any child of element
+ - `:first`        match on first child of element
+ - `:last`         match on last child of element
+ - `:nth`          match on nth child of element
+ - `:nth-left`     match on nth-sibling to the left of element
+ - `:nth-right`    match on nth-sibling to the right of element
+ - `:nth-ancestor` match on the ancestor that is n levels higher
+ - `:nth-contains` match on any contained element that is n levels lower
+ - `:ancestor`     match on any ancestor
+ - `:contains`     match on any contained element
+ - `:sibling`      match on any sibling
+ - `:left`         match on node directly to left
+ - `:right`        match on node directly to right
+ - `:left-of`      match on node to left
+ - `:right-of`     match on node to right
+ - `:left-most`    match is element is the left-most element
+ - `:right-most`   match is element is the right-most element"
+
+[[:subsection {:title ":fn"}]]
+
+"The most general match, takes a predicate dispatching on a zipper location"
+
+(fact
+  (-> (z/of-string "(if true (+ 1 2) (+ 1 1))")
+      (match {:fn (fn [zloc] (= :list (z/tag zloc)))}))
+  => true)
+
+[[:subsection {:title ":is"}]]
+
+"The most general match, takes a value or a function"
+
+(fact
+  (-> (z/of-string "(if true (+ 1 2) (+ 1 1))")
+      (match {:child {:is true}}))
+  => true
+
+  (fact
+  (-> (z/of-string "(if true (+ 1 2) (+ 1 1))")
+      (match {:child {:is (fn [x] (instance? Boolean x))}}))
+  => true))
+
+[[:subsection {:title ":form"}]]
+
+"By default, a symbol is evaluated as a `:form`'"
+
+(fact
+  (-> (z/of-string "(if true (+ 1 2) (+ 1 1))")
+      (match 'if))
+  => true)
+
+"It can also be expressed explicitly:"
+
+(fact
+  (-> (z/of-string "(if true (+ 1 2) (+ 1 1))")
+      (match '{:form if}))
+  => true)
+
+[[:subsection {:title ":or"}]]
+
+"or style matching done using set notation"
+
+(fact
+  (-> (z/of-string "(if true (+ 1 2) (+ 1 1))")
+      (match '#{{:form if} {:form defn}}))
+  => true)
+
+(fact
+  (-> (z/of-string "(if true (+ 1 2) (+ 1 1))")
+      (match '#{if defn}))
+  => true)
+
+"if need arises to match a set, use the `^&` meta tag"
+
+(fact
+  (-> (z/of-string "(if #{:a :b :c} (+ 1 2) (+ 1 1))")
+      (match {:child {:is '^& #{:a :b :c}}}))
+  => true)
+
+[[:subsection {:title ":and"}]]
+
+"similar usage to :or except that vector notation is used:"
+
+(fact
+  (-> (z/of-string "(if true (+ 1 2) (+ 1 1))")
+      (match '[if defn]))
+  => false
+
+  (-> (z/of-string "(if true (+ 1 2) (+ 1 1))")
+      (match '[if {:contains 1}]))
+  => true)
+
+[[:subsection {:title ":equal"}]]
+
+"matches sets, vectors and maps as is"
+
+(fact
+  (-> (z/of-string "(if #{:a :b :c} (+ 1 2) (+ 1 1))")
+      (match {:child {:equal #{:a :b :c}}}))
+  => true
+
+  (-> (z/of-string "(if {:a 1 :b 2} (+ 1 2) (+ 1 1))")
+      (match {:child {:equal {:a 1 :b 2}}}))
+  => true)
+
+[[:subsection {:title ":type"}]]
+
+"predicate on the rewrite-clj reader type"
+
+(fact
+  (-> (z/of-string "(if true (+ 1 2) (+ 1 1))")
+      (match {:type :list}))
+  => true
+
+  (-> (z/of-string "(if true (+ 1 2) (+ 1 1))")
+      (match {:child {:type :token}}))
+  => true)
+
+[[:subsection {:title ":meta"}]]
+
+"matches the meta on a location"
+
+(fact
+  (-> (z/down (z/of-string "^:a (+ 1 1)"))
+      (match {:meta :a}))
+  => true
+
+  (-> (z/down (z/of-string "^{:a true} (+ 1 1)"))
+      (match {:meta {:a true}}))
+  => true)
+
+[[:subsection {:title ":pattern"}]]
+
+"pattern matches are done automatically with a list"
+
+(fact
+  (-> (z/of-string "(if true (+ 1 2) (+ 1 1))")
+      (match '(if true & _)))
+  => true)
+
+"but they can be made more explicit:"
+
+(fact
+  (-> (z/of-string "(if true (+ 1 2) (+ 1 1))")
+      (match {:pattern '(if true & _)}))
+  => true)
+
+[[:subsection {:title ":parent"}]]
+
+"matches on the parent form"
+
+(fact
+  (-> (z/of-string "(if true (+ 1 2) (+ 1 1))")
+      (z/down)
+      (z/right)
+      (match {:parent 'if}))
+  => true)
+
+
+[[:subsection {:title ":child"}]]
+
+"matches on any of the child forms"
+
+(fact
+  (-> (z/of-string "(if true (+ 1 2) (+ 1 1))")
+      (match {:child '(+ _ 2)}))
+  => true)
+
+[[:subsection {:title ":first"}]]
+
+"matches on the first child, can also be a vector"
+
+(fact
+  (-> (z/of-string "(if [1 2 3] (+ 1 2) (+ 1 1))")
+      (match {:child {:first '+}}))
+  => true
+  
+  (-> (z/of-string "(if [1 2 3] (+ 1 2) (+ 1 1))")
+      (match {:child {:first 1}}))
+  => true)
+
+[[:subsection {:title ":last"}]]
+
+"matches on the last child element"
+
+(fact
+  (-> (z/of-string "(if [1 2 3] (+ 1 2) (+ 1 1))")
+      (match {:child {:last 3}}))
+  => true
+
+  (-> (z/of-string "(if [1 2 3] (+ 1 2) (+ 1 1))")
+      (match {:child {:last 1}}))
+  => true)
+
+[[:subsection {:title ":nth"}]]
+
+"matches the nth child"
+
+(fact
+  (-> (z/of-string "(if [1 2 3] (+ 1 2) (+ 1 1))")
+      (match {:nth [1 {:equal [1 2 3]}]}))
+  => true)
+
+[[:subsection {:title ":nth-left"}]]
+
+"matches the nth sibling to the left"
+
+(fact
+  (-> (z/of-string "(if [1 2 3] (+ 1 2) (+ 1 1))")
+      (z/down)
+      (z/rightmost)
+      (match {:nth-left [2 {:equal [1 2 3]}]}))
+  => true)
+
+
+[[:subsection {:title ":nth-right"}]]
+
+"matches the nth sibling to the right"
+
+(fact
+  (-> (z/of-string "(if [1 2 3] (+ 1 2) (+ 1 1))")
+      (z/down)
+      (match {:nth-right [1 {:equal [1 2 3]}]}))
+  => true)
+
+[[:subsection {:title ":nth-ancestor"}]]
+
+"matches the nth ancestor in the hierarchy"
+
+(fact
+  (-> (z/of-string "(if [1 2 3] (+ 1 2) (+ 1 1))")
+      (z/down)
+      (z/right)
+      (z/down)
+      (match {:nth-ancestor [2 {:form 'if}]}))
+  => true)
+
+[[:subsection {:title ":nth-contains"}]]
+
+"matches the nth level children"
+
+(fact
+  (-> (z/of-string "(if [1 2 3] (+ 1 2) (+ 1 1))")
+      (match {:nth-contains [2 {:is 3}]}))
+  => true)
+
+[[:subsection {:title ":ancestor"}]]
+
+"matches any ancestor"
+
+(fact
+  (-> (z/of-string "(if [1 2 3] (+ 1 2) (+ 1 1))")
+      (z/down)
+      (z/right)
+      (z/down)
+      (match {:ancestor 'if}))
+  => true)
+
+[[:subsection {:title ":contains"}]]
+
+"matches the any subelement contained by the element"
+
+(fact
+  (-> (z/of-string "(if [1 2 3] (+ 1 2) (+ 1 1))")
+      (match {:contains 3}))
+  => true)
+
+[[:subsection {:title ":sibling"}]]
+
+"matches any sibling"
+
+(fact
+  (-> (z/of-string "(if [1 2 3] (+ 1 2) (+ 1 1))")
+      (z/down)
+      (match {:sibling {:form '+}}))
+  => true)
+
+[[:subsection {:title ":left"}]]
+
+"matches element to the left"
+
+(fact
+  (-> (z/of-string "(if [1 2 3] (+ 1 2) (+ 1 1))")
+      (z/down)
+      (z/right)
+      (match {:left {:is 'if}}))
+  => true)
+
+[[:subsection {:title ":right"}]]
+
+"matches element to the right"
+
+(fact
+  (-> (z/of-string "(if [1 2 3] (+ 1 2) (+ 1 1))")
+      (z/down)
+      (match {:right {:is [1 2 3]}}))
+  => true)
+
+[[:subsection {:title ":left-of"}]]
+
+"matches any element to the left"
+
+(fact
+  (-> (z/of-string "(if [1 2 3] (+ 1 2) (+ 1 1))")
+      (z/down)
+      (z/rightmost)
+      (match {:left-of {:is [1 2 3]}}))
+  => true)
+
+[[:subsection {:title ":right-of"}]]
+
+"matches any element to the right"
+
+(fact
+  (-> (z/of-string "(if [1 2 3] (+ 1 2) (+ 1 1))")
+      (z/down)
+      (match {:right-of '(+ 1 1)}))
+  => true)
+
+[[:subsection {:title ":left-most"}]]
+
+"is the left-most element"
+
+(fact
+  (-> (z/of-string "(if [1 2 3] (+ 1 2) (+ 1 1))")
+      (z/down)
+      (match {:left-most true}))
+  => true)
+
+[[:subsection {:title ":right-most"}]]
+
+"is the right-most element"
+
+(fact
+  (-> (z/of-string "(if [1 2 3] (+ 1 2) (+ 1 1))")
+      (z/down)
+      (z/rightmost)
+      (match {:right-most true}))
+  => true)
