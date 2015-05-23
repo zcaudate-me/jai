@@ -1,0 +1,691 @@
+<html><head><meta content="chrome=1" http-equiv="X-UA-Compatible" /><meta charset="utf-8" /><meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport" /><title>jai</title><style>body {
+  padding:50px;
+  font:14px/1.5 Helvetica, Arial, sans-serif;
+  color:#777;
+  font-weight:300;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color:#222;
+  margin:0 0 20px;
+}
+
+p, ul, ol, table, pre, dl {
+  margin:0 0 20px;
+}
+
+h1, h2, h3 {
+  line-height:1.1;
+}
+
+h1 {
+  font-size:28px;
+}
+
+h2 {
+  color:#393939;
+}
+
+h4, h5, h6 {
+  color:#494949;
+  margin:0;
+}
+
+header h4{
+  margin: 10 0 0 0px;
+}
+
+a {
+  color:#39c;
+  font-weight:400;
+  text-decoration:none;
+}
+
+a small {
+  font-size:11px;
+  color:#777;
+  margin-top:-0.6em;
+  display:block;
+}
+
+.wrapper {
+  width:860px;
+  margin:0 auto;
+}
+
+.figure div.img {
+  text-align: center;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  padding: 10px;
+}
+
+blockquote {
+  border-left:1px solid #e5e5e5;
+  margin:0;
+  padding:0 0 0 20px;
+  font-style:italic;
+}
+
+code, pre {
+  font-family:Monaco, Bitstream Vera Sans Mono, Lucida Console, Terminal;
+  color:#333;
+  font-size:12px;
+}
+
+pre {
+  padding:8px 15px;
+  background: #f8f8f8;  
+  border-radius:5px;
+  border:1px solid #e5e5e5;
+  overflow-x: auto;
+}
+
+table {
+  width:100%;
+  border-collapse:collapse;
+}
+
+th, td {
+  text-align:left;
+  padding:5px 10px;
+  border-bottom:1px solid #e5e5e5;
+}
+
+dt {
+  color:#444;
+  font-weight:700;
+}
+
+th {
+  color:#444;
+}
+
+img {
+  max-width:100%;
+}
+
+header {
+  width:270px;
+  float:left;
+  /*position:fixed;*/
+}
+
+header ul {
+  list-style:none;
+  height:40px;
+  
+  padding:0;
+  
+  background: #eee;
+  background: -moz-linear-gradient(top, #f8f8f8 0%, #dddddd 100%);
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#f8f8f8), color-stop(100%,#dddddd));
+  background: -webkit-linear-gradient(top, #f8f8f8 0%,#dddddd 100%);
+  background: -o-linear-gradient(top, #f8f8f8 0%,#dddddd 100%);
+  background: -ms-linear-gradient(top, #f8f8f8 0%,#dddddd 100%);
+  background: linear-gradient(top, #f8f8f8 0%,#dddddd 100%);
+  
+  border-radius:5px;
+  border:1px solid #d2d2d2;
+  box-shadow:inset #fff 0 1px 0, inset rgba(0,0,0,0.03) 0 -1px 0;
+  width:270px;
+}
+
+header li {
+  width:89px;
+  float:left;
+  border-right:1px solid #d2d2d2;
+  height:40px;
+}
+
+header ul a {
+  line-height:1;
+  font-size:11px;
+  color:#999;
+  display:block;
+  text-align:center;
+  padding-top:6px;
+  height:40px;
+}
+
+strong {
+  font-weight:700;
+}
+
+header ul li + li {
+  width:88px;
+  border-left:1px solid #fff;
+}
+
+header ul li + li + li {
+  border-right:none;
+  width:89px;
+}
+
+header ul a strong {
+  font-size:14px;
+  display:block;
+  color:#222;
+}
+
+section {
+  width: 60%;
+  float:right;
+  padding-bottom:50px;
+  padding-right: 10%;
+}
+
+small {
+  font-size:11px;
+}
+
+hr {
+  border:0;
+  background:#e5e5e5;
+  height:1px;
+  margin:0 0 20px;
+}
+
+footer {
+  width:270px;
+  float:left;
+  position:fixed;
+  bottom:50px;
+}
+
+header div.heading {
+  display:none;
+}
+
+
+@media print, screen and (max-width: 960px) {
+  
+  div.wrapper {
+    width:auto;
+    margin:0;
+  }
+  
+  header, section, footer {
+    float:none;
+    position:static;
+    width:auto;
+  }
+  
+  header div.heading {
+    display:block;
+  }
+    
+  section div.heading {
+    display:none;
+  }
+  
+  section {
+    border:1px solid #e5e5e5;
+    border-width:1px 0;
+    padding:20px 0;
+    margin:0 0 20px;
+  }
+  
+  header a small {
+    display:inline;
+  }
+  
+  header ul {
+    position:absolute;
+    right:50px;
+    top:52px;
+  }
+}
+
+@media print, screen and (max-width: 720px) {
+  body {
+    word-wrap:break-word;
+  }
+  
+  header {
+    padding:0;
+  }
+  
+  header ul, header p.view {
+    position:static;
+  }
+  
+  pre, code {
+    word-wrap:normal;
+  }
+}
+
+@media print, screen and (max-width: 480px) {
+  body {
+    padding:15px;
+  }
+  
+  header ul {
+    display:none;
+  }
+}
+
+@media print {
+  body {
+    padding:0.4in;
+    font-size:12pt;
+    color:#444;
+  }
+}
+
+
+.highlight  { background: #ffffff; }
+.highlight .c { color: #999988; font-style: italic } /* Comment */
+.highlight .err { color: #a61717; background-color: #e3d2d2 } /* Error */
+.highlight .k { font-weight: bold } /* Keyword */
+.highlight .o { font-weight: bold } /* Operator */
+.highlight .cm { color: #999988; font-style: italic } /* Comment.Multiline */
+.highlight .cp { color: #999999; font-weight: bold } /* Comment.Preproc */
+.highlight .c1 { color: #999988; font-style: italic } /* Comment.Single */
+.highlight .cs { color: #999999; font-weight: bold; font-style: italic } /* Comment.Special */
+.highlight .gd { color: #000000; background-color: #ffdddd } /* Generic.Deleted */
+.highlight .gd .x { color: #000000; background-color: #ffaaaa } /* Generic.Deleted.Specific */
+.highlight .ge { font-style: italic } /* Generic.Emph */
+.highlight .gr { color: #aa0000 } /* Generic.Error */
+.highlight .gh { color: #999999 } /* Generic.Heading */
+.highlight .gi { color: #000000; background-color: #ddffdd } /* Generic.Inserted */
+.highlight .gi .x { color: #000000; background-color: #aaffaa } /* Generic.Inserted.Specific */
+.highlight .go { color: #888888 } /* Generic.Output */
+.highlight .gp { color: #555555 } /* Generic.Prompt */
+.highlight .gs { font-weight: bold } /* Generic.Strong */
+.highlight .gu { color: #800080; font-weight: bold; } /* Generic.Subheading */
+.highlight .gt { color: #aa0000 } /* Generic.Traceback */
+.highlight .kc { font-weight: bold } /* Keyword.Constant */
+.highlight .kd { font-weight: bold } /* Keyword.Declaration */
+.highlight .kn { font-weight: bold } /* Keyword.Namespace */
+.highlight .kp { font-weight: bold } /* Keyword.Pseudo */
+.highlight .kr { font-weight: bold } /* Keyword.Reserved */
+.highlight .kt { color: #445588; font-weight: bold } /* Keyword.Type */
+.highlight .m { color: #009999 } /* Literal.Number */
+.highlight .s { color: #d14 } /* Literal.String */
+.highlight .na { color: #008080 } /* Name.Attribute */
+.highlight .nb { color: #0086B3 } /* Name.Builtin */
+.highlight .nc { color: #445588; font-weight: bold } /* Name.Class */
+.highlight .no { color: #008080 } /* Name.Constant */
+.highlight .ni { color: #800080 } /* Name.Entity */
+.highlight .ne { color: #990000; font-weight: bold } /* Name.Exception */
+.highlight .nf { color: #990000; font-weight: bold } /* Name.Function */
+.highlight .nn { color: #555555 } /* Name.Namespace */
+.highlight .nt { color: #000080 } /* Name.Tag */
+.highlight .nv { color: #008080 } /* Name.Variable */
+.highlight .ow { font-weight: bold } /* Operator.Word */
+.highlight .w { color: #bbbbbb } /* Text.Whitespace */
+.highlight .mf { color: #009999 } /* Literal.Number.Float */
+.highlight .mh { color: #009999 } /* Literal.Number.Hex */
+.highlight .mi { color: #009999 } /* Literal.Number.Integer */
+.highlight .mo { color: #009999 } /* Literal.Number.Oct */
+.highlight .sb { color: #d14 } /* Literal.String.Backtick */
+.highlight .sc { color: #d14 } /* Literal.String.Char */
+.highlight .sd { color: #d14 } /* Literal.String.Doc */
+.highlight .s2 { color: #d14 } /* Literal.String.Double */
+.highlight .se { color: #d14 } /* Literal.String.Escape */
+.highlight .sh { color: #d14 } /* Literal.String.Heredoc */
+.highlight .si { color: #d14 } /* Literal.String.Interpol */
+.highlight .sx { color: #d14 } /* Literal.String.Other */
+.highlight .sr { color: #009926 } /* Literal.String.Regex */
+.highlight .s1 { color: #d14 } /* Literal.String.Single */
+.highlight .ss { color: #990073 } /* Literal.String.Symbol */
+.highlight .bp { color: #999999 } /* Name.Builtin.Pseudo */
+.highlight .vc { color: #008080 } /* Name.Variable.Class */
+.highlight .vg { color: #008080 } /* Name.Variable.Global */
+.highlight .vi { color: #008080 } /* Name.Variable.Instance */
+.highlight .il { color: #009999 } /* Literal.Number.Integer.Long */
+
+.type-csharp .highlight .k { color: #0000FF }
+.type-csharp .highlight .kt { color: #0000FF }
+.type-csharp .highlight .nf { color: #000000; font-weight: normal }
+.type-csharp .highlight .nc { color: #2B91AF }
+.type-csharp .highlight .nn { color: #000000 }
+.type-csharp .highlight .s { color: #A31515 }
+.type-csharp .highlight .sc { color: #A31515 }
+
+
+</style></head><body><header><div class="heading"><h1>jai</h1><h3>Manipulate source code like the DOM</h3><hr /><div class="info"><h5>Author: Chris Zheng<b>&nbsp;&nbsp;<a href="mailto:z@caudate.me">(z@caudate.me)</a></b></h5><h5>Library: v0.2.2</h5><h5>Date: 23 May 2015</h5><h5>Website: <a href="http://github.com/zcaudate/jai">http://github.com/zcaudate/jai</a></h5><h5>Generated By: <a href="http://www.github.com/zcaudate/lein-midje-doc">MidjeDoc</a></h5></div><br /><hr /></div><h4><a href="#introduction">1 &nbsp; Introduction</a></h4><h4><a href="#installation">2 &nbsp; Installation</a></h4><h4><a href="#usage">3 &nbsp; Usage</a></h4><h5>&nbsp;&nbsp;<i><a href="#basics">3.1 &nbsp; Basics</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#path">3.2 &nbsp; Path</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#representation">3.3 &nbsp; Representation</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#cursors">3.4 &nbsp; Cursors</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#fine-grain-control">3.5 &nbsp; Fine Grain Control</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#pattern-matching">3.6 &nbsp; Pattern Matching</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#insertion">3.7 &nbsp; Insertion</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#deletion">3.8 &nbsp; Deletion</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#optional-matches">3.9 &nbsp; Optional Matches</a></i></h5><h4><a href="#utilities">4 &nbsp; Utilities</a></h4><h5>&nbsp;&nbsp;<i><a href="#traverse">4.1 &nbsp; traverse</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#match">4.2 &nbsp; match</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#:fn">4.2.1 &nbsp; :fn</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#:is">4.2.2 &nbsp; :is</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#:form">4.2.3 &nbsp; :form</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#:or">4.2.4 &nbsp; :or</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#:and">4.2.5 &nbsp; :and</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#:equal">4.2.6 &nbsp; :equal</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#:type">4.2.7 &nbsp; :type</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#:meta">4.2.8 &nbsp; :meta</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#:pattern">4.2.9 &nbsp; :pattern</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#:parent">4.2.10 &nbsp; :parent</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#:child">4.2.11 &nbsp; :child</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#:first">4.2.12 &nbsp; :first</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#:last">4.2.13 &nbsp; :last</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#:nth">4.2.14 &nbsp; :nth</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#:nth-left">4.2.15 &nbsp; :nth-left</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#:nth-right">4.2.16 &nbsp; :nth-right</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#:nth-ancestor">4.2.17 &nbsp; :nth-ancestor</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#:nth-contains">4.2.18 &nbsp; :nth-contains</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#:ancestor">4.2.19 &nbsp; :ancestor</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#:contains">4.2.20 &nbsp; :contains</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#:sibling">4.2.21 &nbsp; :sibling</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#:left">4.2.22 &nbsp; :left</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#:right">4.2.23 &nbsp; :right</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#:left-of">4.2.24 &nbsp; :left-of</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#:right-of">4.2.25 &nbsp; :right-of</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#:left-most">4.2.26 &nbsp; :left-most</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#:right-most">4.2.27 &nbsp; :right-most</a></i></h5><br /></header><section><div class="heading"><h1>jai</h1><h3>Manipulate source code like the DOM</h3><hr /><div class="info"><h5>Author: Chris Zheng<b>&nbsp;&nbsp;<a href="mailto:z@caudate.me">(z@caudate.me)</a></b></h5><h5>Library: v0.2.2</h5><h5>Date: 23 May 2015</h5><h5>Website: <a href="http://github.com/zcaudate/jai">http://github.com/zcaudate/jai</a></h5><h5>Generated By: <a href="http://www.github.com/zcaudate/lein-midje-doc">MidjeDoc</a></h5></div><br /><hr /></div><div><a name="introduction"></a><h2><b>1 &nbsp;&nbsp; Introduction</b></h2></div><div><p><code>jai</code> that makes it easy for querying and manipulation of clojure source code through an <code>xpath</code>/<code>css</code>-inspired syntax</p><ul><li>to simplify traversal and manipulation of source code</li><li>to provide higher level abstractions on top of <a href='https://github.com/xsc/rewrite-clj'>rewrite-clj</a></li><li>to leverage <a href='https://github.com/clojure/core.match'>core.match</a>'s pattern matching for a more declarative syntax</li></ul></div><div><a name="installation"></a><h2><b>2 &nbsp;&nbsp; Installation</b></h2></div><div><p>Add to <code>project.clj</code> dependencies: </p><p><code>&#91;im.chit/jai </code>&quot;<code>0.2.2</code>&quot;<code>&#93;</code></p><p>All functionality is in the <code>jai.query</code> namespace:</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">use</span> <span class="nv">jai.query</span><span class="p">)</span>
+</pre></div>
+</div><div><a name="usage"></a><h2><b>3 &nbsp;&nbsp; Usage</b></h2></div><div><p>We first define a code fragment to query on. The library currently works with strings and files.</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="k">def </span><span class="nv">fragment</span> <span class="p">{</span><span class="ss">:string</span> <span class="s">&quot;(defn hello [] (println \&quot;hello\&quot;))\n</span>
+<span class="s">                        (defn world [] (if true (prn \&quot;world\&quot;)))&quot;</span><span class="p">})</span>
+</pre></div>
+</div><div><a name="basics"></a><h3>3.1 &nbsp;&nbsp; Basics</h3></div><div><p>Find all the <code>defn</code> forms:</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">$</span> <span class="nv">fragment</span> <span class="p">[</span><span class="nv">defn</span><span class="p">])</span>
+<span class="nv">=&gt;</span> <span class="o">&#39;</span><span class="p">[(</span><span class="kd">defn </span><span class="nv">hello</span> <span class="p">[]</span> <span class="p">(</span><span class="nb">println </span><span class="s">&quot;hello&quot;</span><span class="p">))</span>
+     <span class="p">(</span><span class="kd">defn </span><span class="nv">world</span> <span class="p">[]</span> <span class="p">(</span><span class="k">if </span><span class="nv">true</span> <span class="p">(</span><span class="nb">prn </span><span class="s">&quot;world&quot;</span><span class="p">)))]</span>
+</pre></div>
+</div><div><p>Find all the <code>if</code> forms</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">$</span> <span class="nv">fragment</span> <span class="p">[</span><span class="nv">if</span><span class="p">])</span>
+<span class="nv">=&gt;</span> <span class="o">&#39;</span><span class="p">((</span><span class="k">if </span><span class="nv">true</span> <span class="p">(</span><span class="nb">prn </span><span class="s">&quot;world&quot;</span><span class="p">)))</span>
+</pre></div>
+</div><div><a name="path"></a><h3>3.2 &nbsp;&nbsp; Path</h3></div><div><p>Find all the <code>defn</code> forms that contain an <code>if</code> form directly below it:</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">$</span> <span class="nv">fragment</span> <span class="p">[</span><span class="kd">defn </span><span class="nv">if</span><span class="p">])</span>
+<span class="nv">=&gt;</span> <span class="o">&#39;</span><span class="p">[(</span><span class="kd">defn </span><span class="nv">world</span> <span class="p">[]</span> <span class="p">(</span><span class="k">if </span><span class="nv">true</span> <span class="p">(</span><span class="nb">prn </span><span class="s">&quot;world&quot;</span><span class="p">)))]</span>
+</pre></div>
+</div><div><p>Find all the <code>defn</code> forms that contains a <code>prn</code> form anywhere in its body</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">$</span> <span class="nv">fragment</span> <span class="p">[</span><span class="kd">defn </span><span class="ss">:*</span> <span class="nv">prn</span><span class="p">])</span>
+<span class="nv">=&gt;</span> <span class="o">&#39;</span><span class="p">[(</span><span class="kd">defn </span><span class="nv">world</span> <span class="p">[]</span> <span class="p">(</span><span class="k">if </span><span class="nv">true</span> <span class="p">(</span><span class="nb">prn </span><span class="s">&quot;world&quot;</span><span class="p">)))]</span>
+</pre></div>
+</div><div><p>Depth searching at specific levels can also be done, the following code performs a search for <code>prn</code> at the second and third level forms below the <code>defn</code>:</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">$</span> <span class="nv">fragment</span> <span class="p">[</span><span class="kd">defn </span><span class="ss">:2</span> <span class="nv">prn</span><span class="p">])</span>
+<span class="nv">=&gt;</span> <span class="o">&#39;</span><span class="p">[(</span><span class="kd">defn </span><span class="nv">world</span> <span class="p">[]</span> <span class="p">(</span><span class="k">if </span><span class="nv">true</span> <span class="p">(</span><span class="nb">prn </span><span class="s">&quot;world&quot;</span><span class="p">)))]</span>
+
+<span class="p">(</span><span class="nf">$</span> <span class="nv">fragment</span> <span class="p">[</span><span class="kd">defn </span><span class="ss">:3</span> <span class="nv">prn</span><span class="p">])</span>
+<span class="nv">=&gt;</span> <span class="o">&#39;</span><span class="p">[]</span>
+</pre></div>
+</div><div><a name="representation"></a><h3>3.3 &nbsp;&nbsp; Representation</h3></div><div><p>Instead of returning an s-expression, we can also return other represetations through specifying the <code>:return</code> value on the code. The options are <code>:zipper</code>, <code>:sexpr</code> or <code>:string</code>.</p></div><div><p>By default, querying returns a <code>:sexpr</code> representation</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">$</span> <span class="p">(</span><span class="nb">assoc </span><span class="nv">fragment</span> <span class="ss">:return</span> <span class="ss">:sexpr</span><span class="p">)</span> <span class="p">[</span><span class="kd">defn </span><span class="ss">:*</span> <span class="nv">prn</span><span class="p">])</span>
+<span class="nv">=&gt;</span> <span class="o">&#39;</span><span class="p">[(</span><span class="kd">defn </span><span class="nv">world</span> <span class="p">[]</span> <span class="p">(</span><span class="k">if </span><span class="nv">true</span> <span class="p">(</span><span class="nb">prn </span><span class="s">&quot;world&quot;</span><span class="p">)))]</span>
+</pre></div>
+</div><div><p>String representations are useful for directly writing to file</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">$</span> <span class="nv">fragment</span> <span class="p">[</span><span class="kd">defn </span><span class="ss">:*</span> <span class="nv">prn</span><span class="p">]</span> <span class="p">{</span><span class="ss">:return</span> <span class="ss">:string</span><span class="p">})</span>
+<span class="nv">=&gt;</span> <span class="p">[</span><span class="s">&quot;(defn world [] (if true (prn \&quot;world\&quot;)))&quot;</span><span class="p">]</span>
+</pre></div>
+</div><div><p>If more manipulation is needed, then returning a zipper allows composablity with rewrite-clj</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">-&gt;&gt;</span> <span class="p">(</span><span class="nf">$</span> <span class="nv">fragment</span> <span class="p">[</span><span class="kd">defn </span><span class="ss">:*</span> <span class="nv">prn</span><span class="p">]</span> <span class="p">{</span><span class="ss">:return</span> <span class="ss">:zipper</span><span class="p">})</span>
+     <span class="p">(</span><span class="nb">map </span><span class="nv">z/sexpr</span><span class="p">))</span>
+<span class="nv">=&gt;</span> <span class="o">&#39;</span><span class="p">[(</span><span class="kd">defn </span><span class="nv">world</span> <span class="p">[]</span> <span class="p">(</span><span class="k">if </span><span class="nv">true</span> <span class="p">(</span><span class="nb">prn </span><span class="s">&quot;world&quot;</span><span class="p">)))]</span>
+</pre></div>
+</div><div><a name="cursors"></a><h3>3.4 &nbsp;&nbsp; Cursors</h3></div><div><p>It is not very useful just selecting top-level forms. We need a way to move between the sections. This is where cursors come into picture. We can use <code>|</code> to set access to selected forms. For example, we can grab the entire top level form like this:</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">$</span> <span class="nv">fragment</span> <span class="p">[</span><span class="kd">defn </span><span class="nv">println</span><span class="p">])</span>
+<span class="nv">=&gt;</span> <span class="o">&#39;</span><span class="p">[(</span><span class="kd">defn </span><span class="nv">hello</span> <span class="p">[]</span> <span class="p">(</span><span class="nb">println </span><span class="s">&quot;hello&quot;</span><span class="p">))]</span>
+</pre></div>
+</div><div><p>But usually, the more common scenario is that we wish to perform a particular action on the <code>&#40;println ...&#41;</code> form. This is accessible by adding <code>&quot;|&quot;</code> in front of the <code>println</code> symbol:</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">$</span> <span class="nv">fragment</span> <span class="p">[</span><span class="kd">defn </span><span class="err">|</span> <span class="nv">println</span><span class="p">])</span>
+<span class="nv">=&gt;</span> <span class="o">&#39;</span><span class="p">[(</span><span class="nb">println </span><span class="s">&quot;hello&quot;</span><span class="p">)]</span>
+</pre></div>
+</div><div><p>We can see how the cursor works by drilling down into our code fragment:</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">$</span> <span class="nv">fragment</span> <span class="p">[</span><span class="kd">defn </span><span class="k">if </span><span class="nv">prn</span><span class="p">])</span>
+<span class="nv">=&gt;</span> <span class="o">&#39;</span><span class="p">[(</span><span class="kd">defn </span><span class="nv">world</span> <span class="p">[]</span> <span class="p">(</span><span class="k">if </span><span class="nv">true</span> <span class="p">(</span><span class="nb">prn </span><span class="s">&quot;world&quot;</span><span class="p">)))]</span>
+
+<span class="p">(</span><span class="nf">$</span> <span class="nv">fragment</span> <span class="p">[</span><span class="err">|</span> <span class="kd">defn </span><span class="k">if </span><span class="nv">prn</span><span class="p">])</span>
+<span class="nv">=&gt;</span> <span class="o">&#39;</span><span class="p">[(</span><span class="kd">defn </span><span class="nv">world</span> <span class="p">[]</span> <span class="p">(</span><span class="k">if </span><span class="nv">true</span> <span class="p">(</span><span class="nb">prn </span><span class="s">&quot;world&quot;</span><span class="p">)))]</span>
+
+<span class="p">(</span><span class="nf">$</span> <span class="nv">fragment</span> <span class="p">[</span><span class="kd">defn </span><span class="err">|</span> <span class="k">if </span><span class="nv">prn</span><span class="p">])</span>
+<span class="nv">=&gt;</span> <span class="o">&#39;</span><span class="p">[(</span><span class="k">if </span><span class="nv">true</span> <span class="p">(</span><span class="nb">prn </span><span class="s">&quot;world&quot;</span><span class="p">))]</span>
+
+<span class="p">(</span><span class="nf">$</span> <span class="nv">fragment</span> <span class="p">[</span><span class="kd">defn </span><span class="k">if </span><span class="err">|</span> <span class="nv">prn</span><span class="p">])</span>
+<span class="nv">=&gt;</span> <span class="o">&#39;</span><span class="p">[(</span><span class="nb">prn </span><span class="s">&quot;world&quot;</span><span class="p">)]</span>
+</pre></div>
+</div><div><a name="fine-grain-control"></a><h3>3.5 &nbsp;&nbsp; Fine Grain Control</h3></div><div><p>It is not enough that we can walk to a particular form, we have to be able to control the place within the form that we wish to traverse to. </p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">$</span> <span class="nv">fragment</span> <span class="p">[</span><span class="kd">defn </span><span class="p">(</span><span class="k">if </span><span class="err">|</span> <span class="nv">_</span> <span class="o">&amp;</span> <span class="nv">_</span><span class="p">)])</span>
+<span class="nv">=&gt;</span> <span class="o">&#39;</span><span class="p">[</span><span class="nv">true</span><span class="p">]</span>
+
+<span class="p">(</span><span class="nf">$</span> <span class="nv">fragment</span> <span class="p">[</span><span class="kd">defn </span><span class="p">(</span><span class="k">if </span><span class="nv">_</span> <span class="err">|</span> <span class="nv">_</span><span class="p">)])</span>
+<span class="nv">=&gt;</span> <span class="o">&#39;</span><span class="p">[(</span><span class="nb">prn </span><span class="s">&quot;world&quot;</span><span class="p">)]</span>
+
+<span class="p">(</span><span class="nf">$</span> <span class="nv">fragment</span> <span class="p">[</span><span class="kd">defn </span><span class="k">if </span><span class="p">(</span><span class="nb">prn </span><span class="err">|</span> <span class="nv">_</span><span class="p">)])</span>
+<span class="nv">=&gt;</span> <span class="o">&#39;</span><span class="p">[</span><span class="s">&quot;world&quot;</span><span class="p">]</span>
+</pre></div>
+</div><div><a name="pattern-matching"></a><h3>3.6 &nbsp;&nbsp; Pattern Matching</h3></div><div><p>We can also use a pattern expressed using a list. Defining a pattern allows matched elements to be expressed more intuitively:</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">$</span> <span class="nv">fragment</span> <span class="p">[(</span><span class="kd">defn </span><span class="o">&amp;</span> <span class="nv">_</span><span class="p">)])</span>
+<span class="nv">=&gt;</span> <span class="o">&#39;</span><span class="p">[(</span><span class="kd">defn </span><span class="nv">hello</span> <span class="p">[]</span> <span class="p">(</span><span class="nb">println </span><span class="s">&quot;hello&quot;</span><span class="p">))</span>
+     <span class="p">(</span><span class="kd">defn </span><span class="nv">world</span> <span class="p">[]</span> <span class="p">(</span><span class="k">if </span><span class="nv">true</span> <span class="p">(</span><span class="nb">prn </span><span class="s">&quot;world&quot;</span><span class="p">)))]</span>
+
+<span class="p">(</span><span class="nf">$</span> <span class="nv">fragment</span> <span class="p">[(</span><span class="kd">defn </span><span class="nv">hello</span> <span class="o">&amp;</span> <span class="nv">_</span><span class="p">)])</span>
+<span class="nv">=&gt;</span> <span class="o">&#39;</span><span class="p">[(</span><span class="kd">defn </span><span class="nv">hello</span> <span class="p">[]</span> <span class="p">(</span><span class="nb">println </span><span class="s">&quot;hello&quot;</span><span class="p">))]</span>
+</pre></div>
+</div><div><p>A pattern can have nestings:</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">$</span> <span class="nv">fragment</span> <span class="p">[(</span><span class="kd">defn </span><span class="nv">world</span> <span class="p">[]</span> <span class="p">(</span><span class="k">if </span><span class="o">&amp;</span> <span class="nv">_</span><span class="p">))])</span>
+<span class="nv">=&gt;</span> <span class="o">&#39;</span><span class="p">[(</span><span class="kd">defn </span><span class="nv">world</span> <span class="p">[]</span> <span class="p">(</span><span class="k">if </span><span class="nv">true</span> <span class="p">(</span><span class="nb">prn </span><span class="s">&quot;world&quot;</span><span class="p">)))]</span>
+</pre></div>
+</div><div><p>If functions are needed, the symbols can be tagged with the a meta <code>&#94;:%</code></p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">$</span> <span class="nv">fragment</span> <span class="p">[(</span><span class="kd">defn </span><span class="nv">world</span> <span class="o">^</span><span class="ss">:%</span> <span class="nb">vector? </span><span class="o">^</span><span class="ss">:%</span> <span class="nv">list?</span><span class="p">)])</span>
+<span class="nv">=&gt;</span> <span class="o">&#39;</span><span class="p">[(</span><span class="kd">defn </span><span class="nv">world</span> <span class="p">[]</span> <span class="p">(</span><span class="k">if </span><span class="nv">true</span> <span class="p">(</span><span class="nb">prn </span><span class="s">&quot;world&quot;</span><span class="p">)))]</span>
+</pre></div>
+</div><div><p>The queries are declarative and should be quite intuitive to use</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">$</span> <span class="nv">fragment</span> <span class="p">[(</span><span class="nf">_</span> <span class="nv">_</span> <span class="nv">_</span> <span class="p">(</span><span class="k">if </span><span class="o">^</span><span class="ss">:%</span> <span class="nb">true? </span><span class="o">&amp;</span> <span class="nv">_</span><span class="p">))])</span>
+<span class="nv">=&gt;</span> <span class="o">&#39;</span><span class="p">[(</span><span class="kd">defn </span><span class="nv">world</span> <span class="p">[]</span> <span class="p">(</span><span class="k">if </span><span class="nv">true</span> <span class="p">(</span><span class="nb">prn </span><span class="s">&quot;world&quot;</span><span class="p">)))]</span>
+</pre></div>
+</div><div><a name="insertion"></a><h3>3.7 &nbsp;&nbsp; Insertion</h3></div><div><p>We can additionally insert elements by tagging with the <code>&#94;:+</code> meta:</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">$</span> <span class="nv">fragment</span> <span class="p">[(</span><span class="kd">defn </span><span class="nv">world</span> <span class="nv">_</span> <span class="o">^</span><span class="ss">:+</span> <span class="p">(</span><span class="nb">prn </span><span class="s">&quot;hello&quot;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="nv">_</span><span class="p">)])</span>
+<span class="nv">=&gt;</span> <span class="o">&#39;</span><span class="p">[(</span><span class="kd">defn </span><span class="nv">world</span> <span class="p">[]</span> <span class="p">(</span><span class="nb">prn </span><span class="s">&quot;hello&quot;</span><span class="p">)</span> <span class="p">(</span><span class="k">if </span><span class="nv">true</span> <span class="p">(</span><span class="nb">prn </span><span class="s">&quot;world&quot;</span><span class="p">)))]</span>
+</pre></div>
+</div><div><p>There are some values that do not allow metas tags (<code>strings</code>, <code>keywords</code> and <code>number</code>), in this case the workaround is to use the <code>&#94;:%+</code> meta and write the object as an expression to be evaluated. Note the writing <code>:%+</code> is the equivalent of writing <code>&#94;{:% true :+ true}</code></p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">$</span> <span class="nv">fragment</span> <span class="p">[(</span><span class="kd">defn </span><span class="nv">world</span> <span class="nv">_</span> <span class="p">(</span><span class="k">if </span><span class="nv">true</span> <span class="p">(</span><span class="nb">prn </span><span class="o">^</span><span class="ss">:%+</span> <span class="p">(</span><span class="nb">keyword </span><span class="s">&quot;hello&quot;</span><span class="p">)</span> <span class="nv">_</span><span class="p">)))])</span>
+<span class="nv">=&gt;</span> <span class="o">&#39;</span><span class="p">[(</span><span class="kd">defn </span><span class="nv">world</span> <span class="p">[]</span> <span class="p">(</span><span class="k">if </span><span class="nv">true</span> <span class="p">(</span><span class="nb">prn </span><span class="ss">:hello</span> <span class="s">&quot;world&quot;</span><span class="p">)))]</span>
+</pre></div>
+</div><div><p>Insertions also work seamlessly with cursors:</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">$</span> <span class="nv">fragment</span> <span class="p">[(</span><span class="kd">defn </span><span class="nv">world</span> <span class="nv">_</span> <span class="p">(</span><span class="k">if </span><span class="nv">true</span> <span class="err">|</span> <span class="p">(</span><span class="nb">prn </span><span class="o">^</span><span class="ss">:%+</span> <span class="p">(</span><span class="nb">long </span><span class="mi">2</span><span class="p">)</span> <span class="nv">_</span><span class="p">)))])</span>
+<span class="nv">=&gt;</span> <span class="o">&#39;</span><span class="p">[(</span><span class="nb">prn </span><span class="mi">2</span> <span class="s">&quot;world&quot;</span><span class="p">)]</span>
+</pre></div>
+</div><div><a name="deletion"></a><h3>3.8 &nbsp;&nbsp; Deletion</h3></div><div><p>We can delete values by using the <code>&#94;:-</code> meta tag. When used on the code fragment, we can see that the function has been mangled as the first two elements have been deleted:</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">$</span> <span class="nv">fragment</span> <span class="p">[(</span><span class="kd">defn </span><span class="o">^</span><span class="ss">:-</span> <span class="nv">world</span>  <span class="o">^</span><span class="ss">:-</span> <span class="nv">_</span> <span class="o">&amp;</span> <span class="nv">_</span><span class="p">)])</span>
+<span class="nv">=&gt;</span> <span class="o">&#39;</span><span class="p">[(</span><span class="kd">defn </span><span class="p">(</span><span class="k">if </span><span class="nv">true</span> <span class="p">(</span><span class="nb">prn </span><span class="s">&quot;world&quot;</span><span class="p">)))]</span>
+</pre></div>
+</div><div><p>Entire forms can be marked for deletion:</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">$</span> <span class="nv">fragment</span> <span class="p">[(</span><span class="kd">defn </span><span class="nv">world</span> <span class="nv">_</span> <span class="o">^</span><span class="ss">:-</span> <span class="p">(</span><span class="k">if </span><span class="o">&amp;</span> <span class="nv">_</span><span class="p">))])</span>
+<span class="nv">=&gt;</span> <span class="o">&#39;</span><span class="p">[(</span><span class="kd">defn </span><span class="nv">world</span> <span class="p">[])]</span>
+</pre></div>
+</div><div><p>Deletions and insertions work quite well together. For example, below shows the replacement of the function name from <code>world</code> to <code>world2</code>:</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">$</span> <span class="nv">fragment</span> <span class="p">[(</span><span class="kd">defn </span><span class="o">^</span><span class="ss">:-</span> <span class="nv">world</span> <span class="nv">_</span> <span class="o">^</span><span class="ss">:+</span> <span class="nv">world2</span> <span class="o">&amp;</span> <span class="nv">_</span><span class="p">)])</span>
+<span class="nv">=&gt;</span> <span class="o">&#39;</span><span class="p">[(</span><span class="kd">defn </span><span class="p">[]</span> <span class="nv">world2</span> <span class="p">(</span><span class="k">if </span><span class="nv">true</span> <span class="p">(</span><span class="nb">prn </span><span class="s">&quot;world&quot;</span><span class="p">)))]</span>
+</pre></div>
+</div><div><a name="optional-matches"></a><h3>3.9 &nbsp;&nbsp; Optional Matches</h3></div><div><p>There are certain use cases when source code has optional parameters such as a docstring or a meta map.</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">$</span> <span class="nv">fragment</span> <span class="p">[(</span><span class="kd">defn </span><span class="o">^</span><span class="ss">:%</span> <span class="nb">symbol? </span><span class="o">^</span><span class="ss">:%?-</span> <span class="nb">string? </span><span class="o">^</span><span class="ss">:%?-</span> <span class="nb">map? </span><span class="o">^</span><span class="ss">:%</span> <span class="nb">vector? </span><span class="o">&amp;</span> <span class="nv">_</span><span class="p">)])</span>
+<span class="nv">=&gt;</span> <span class="o">&#39;</span><span class="p">[(</span><span class="kd">defn </span><span class="nv">hello</span> <span class="p">[]</span> <span class="p">(</span><span class="nb">println </span><span class="s">&quot;hello&quot;</span><span class="p">))</span>
+     <span class="p">(</span><span class="kd">defn </span><span class="nv">world</span> <span class="p">[]</span> <span class="p">(</span><span class="k">if </span><span class="nv">true</span> <span class="p">(</span><span class="nb">prn </span><span class="s">&quot;world&quot;</span><span class="p">)))]</span>
+</pre></div>
+</div><div><p>We can use optional matches to clean up certain elements within the form, such as being able to remove docstrings and meta maps if they exist.</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">$</span> <span class="p">{</span><span class="ss">:string</span> <span class="s">&quot;(defn add \&quot;adding numbers\&quot; {:added \&quot;0.1\&quot;} [x y] (+ x y))&quot;</span><span class="p">}</span>
+   <span class="p">[(</span><span class="kd">defn </span><span class="o">^</span><span class="ss">:%</span> <span class="nb">symbol? </span><span class="o">^</span><span class="ss">:%?-</span> <span class="nb">string? </span><span class="o">^</span><span class="ss">:%?-</span> <span class="nb">map? </span><span class="o">^</span><span class="ss">:%</span> <span class="nb">vector? </span><span class="o">&amp;</span> <span class="nv">_</span><span class="p">)]</span>
+   <span class="p">{</span><span class="ss">:return</span> <span class="ss">:string</span><span class="p">})</span>
+<span class="nv">=&gt;</span> <span class="p">[</span><span class="s">&quot;(defn add [x y] (+ x y))&quot;</span><span class="p">]</span>
+</pre></div>
+</div><div><a name="utilities"></a><h2><b>4 &nbsp;&nbsp; Utilities</b></h2></div><div><p>These utilities are specially designed to work with <code>rewrite-clj</code>;</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">use</span> <span class="nv">rewrite-clj.zip</span> <span class="ss">:as</span> <span class="nv">z</span><span class="p">)</span>
+</pre></div>
+</div><div><a name="traverse"></a><h3>4.1 &nbsp;&nbsp; traverse</h3></div><div><p>While the <code>$</code> macro is provided for global searches within a file, <code>traverse</code> is provided to work with the zipper library for traversal/manipulation of a form.</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">z/of-string</span> <span class="s">&quot;(defn add \&quot;adding numbers\&quot; {:added \&quot;0.1\&quot;} [x y] (+ x y))&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">traverse</span> <span class="o">&#39;</span><span class="p">(</span><span class="kd">defn </span><span class="o">^</span><span class="ss">:%</span> <span class="nb">symbol? </span><span class="o">^</span><span class="ss">:%?-</span> <span class="nb">string? </span><span class="o">^</span><span class="ss">:%?-</span> <span class="nb">map? </span><span class="o">^</span><span class="ss">:%</span> <span class="nb">vector? </span><span class="err">|</span> <span class="o">&amp;</span> <span class="nv">_</span><span class="p">))</span>
+    <span class="p">(</span><span class="nf">z/insert-left</span> <span class="o">&#39;</span><span class="p">(</span><span class="nb">prn </span><span class="s">&quot;add&quot;</span><span class="p">))</span>
+    <span class="p">(</span><span class="nf">z/up</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">z/sexpr</span><span class="p">))</span>
+<span class="nv">=&gt;</span> <span class="o">&#39;</span><span class="p">(</span><span class="kd">defn </span><span class="nv">add</span> <span class="p">[</span><span class="nv">x</span> <span class="nv">y</span><span class="p">]</span> <span class="p">(</span><span class="nb">prn </span><span class="s">&quot;add&quot;</span><span class="p">)</span> <span class="p">(</span><span class="nb">+ </span><span class="nv">x</span> <span class="nv">y</span><span class="p">))</span>
+</pre></div>
+</div><div><p><code>traverse</code> can also be given a function as the third argument. This will perform some action on the location given by the cursor and then jump out again:</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">z/of-string</span> <span class="s">&quot;(defn add \&quot;adding numbers\&quot; {:added \&quot;0.1\&quot;} [x y] (+ x y))&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">traverse</span> <span class="o">&#39;</span><span class="p">(</span><span class="kd">defn </span><span class="o">^</span><span class="ss">:%</span> <span class="nb">symbol? </span><span class="o">^</span><span class="ss">:%?-</span> <span class="nb">string? </span><span class="o">^</span><span class="ss">:%?-</span> <span class="nb">map? </span><span class="o">^</span><span class="ss">:%</span> <span class="nb">vector? </span><span class="err">|</span> <span class="o">&amp;</span> <span class="nv">_</span><span class="p">)</span>
+              <span class="p">(</span><span class="k">fn </span><span class="p">[</span><span class="nv">zloc</span><span class="p">]</span> <span class="p">(</span><span class="nf">z/insert-left</span> <span class="nv">zloc</span> <span class="o">&#39;</span><span class="p">(</span><span class="nb">prn </span><span class="s">&quot;add&quot;</span><span class="p">))))</span>
+    <span class="p">(</span><span class="nf">z/sexpr</span><span class="p">))</span>
+<span class="nv">=&gt;</span> <span class="o">&#39;</span><span class="p">(</span><span class="kd">defn </span><span class="nv">add</span> <span class="p">[</span><span class="nv">x</span> <span class="nv">y</span><span class="p">]</span> <span class="p">(</span><span class="nb">prn </span><span class="s">&quot;add&quot;</span><span class="p">)</span> <span class="p">(</span><span class="nb">+ </span><span class="nv">x</span> <span class="nv">y</span><span class="p">))</span>
+</pre></div>
+</div><div><p><code>traverse</code> works with metas as well, which is harder to work with using just <code>rewrite-clj</code></p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">z/of-string</span> <span class="s">&quot;(defn add [x y] ^{:text 0} (+ (+ x 1) y 1))&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">traverse</span> <span class="o">&#39;</span><span class="p">(</span><span class="kd">defn </span><span class="nv">_</span> <span class="nv">_</span> <span class="p">(</span><span class="nb">+ </span><span class="p">(</span><span class="nb">+ </span><span class="err">|</span> <span class="nv">x</span> <span class="mi">1</span><span class="p">)</span> <span class="nv">y</span> <span class="mi">1</span><span class="p">))</span>
+              <span class="p">(</span><span class="k">fn </span><span class="p">[</span><span class="nv">zloc</span><span class="p">]</span> <span class="p">(</span><span class="nf">z/insert-left</span> <span class="nv">zloc</span> <span class="o">&#39;</span><span class="p">(</span><span class="nb">prn </span><span class="s">&quot;add&quot;</span><span class="p">))))</span>
+    <span class="p">(</span><span class="nf">z/sexpr</span><span class="p">))</span>
+<span class="nv">=&gt;</span> <span class="o">&#39;</span><span class="p">(</span><span class="kd">defn </span><span class="nv">add</span> <span class="p">[</span><span class="nv">x</span> <span class="nv">y</span><span class="p">]</span> <span class="p">(</span><span class="nb">+ </span><span class="p">(</span><span class="nb">+ </span><span class="p">(</span><span class="nb">prn </span><span class="s">&quot;add&quot;</span><span class="p">)</span> <span class="nv">x</span> <span class="mi">1</span><span class="p">)</span> <span class="nv">y</span> <span class="mi">1</span><span class="p">))</span>
+</pre></div>
+</div><div><a name="match"></a><h3>4.2 &nbsp;&nbsp; match</h3></div><div><p>a map-based syntax is provided for matching:</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">z/of-string</span> <span class="s">&quot;(if true (+ 1 2) (+ 1 1))&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">match</span> <span class="ss">&#39;if</span><span class="p">))</span>
+<span class="nv">=&gt;</span> <span class="nv">true</span>
+
+<span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">z/of-string</span> <span class="s">&quot;(if true (+ 1 2) (+ 1 1))&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">match</span> <span class="p">{</span><span class="ss">:form</span> <span class="ss">&#39;if</span><span class="p">}))</span>
+<span class="nv">=&gt;</span> <span class="nv">true</span>
+
+<span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">z/of-string</span> <span class="s">&quot;(if true (+ 1 2) (+ 1 1))&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">match</span> <span class="p">{</span><span class="ss">:is</span> <span class="nv">list?</span><span class="p">}))</span>
+<span class="nv">=&gt;</span> <span class="nv">true</span>
+
+<span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">z/of-string</span> <span class="s">&quot;(if true (+ 1 2) (+ 1 1))&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">match</span> <span class="p">{</span><span class="ss">:child</span> <span class="p">{</span><span class="ss">:is</span> <span class="nv">true</span><span class="p">}}))</span>
+<span class="nv">=&gt;</span> <span class="nv">true</span>
+
+<span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">z/of-string</span> <span class="s">&quot;(if true (+ 1 2) (+ 1 1))&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">match</span> <span class="p">{</span><span class="ss">:child</span> <span class="p">{</span><span class="ss">:form</span> <span class="ss">&#39;+</span><span class="p">}}))</span>
+<span class="nv">=&gt;</span> <span class="nv">true</span>
+</pre></div>
+</div><div><p>there are many options for matches:</p><ul><li><code>:fn</code>           match on checking function</li><li><code>:is</code>           match on value or checking function</li><li><code>:or</code>           match two options, done using a set</li><li><code>:equal</code>        match on equivalence</li><li><code>:type</code>         match on <code>rewrite-clj</code> type</li><li><code>:meta</code>         match on meta tag</li><li><code>:form</code>         match on first element of a form</li><li><code>:pattern</code>      match on a pattern</li><li><code>:code</code>         match on code</li><li><code>:parent</code>       match on direct parent of element</li><li><code>:child</code>        match on any child of element</li><li><code>:first</code>        match on first child of element</li><li><code>:last</code>         match on last child of element</li><li><code>:nth</code>          match on nth child of element</li><li><code>:nth-left</code>     match on nth-sibling to the left of element</li><li><code>:nth-right</code>    match on nth-sibling to the right of element</li><li><code>:nth-ancestor</code> match on the ancestor that is n levels higher</li><li><code>:nth-contains</code> match on any contained element that is n levels lower</li><li><code>:ancestor</code>     match on any ancestor</li><li><code>:contains</code>     match on any contained element</li><li><code>:sibling</code>      match on any sibling</li><li><code>:left</code>         match on node directly to left</li><li><code>:right</code>        match on node directly to right</li><li><code>:left-of</code>      match on node to left</li><li><code>:right-of</code>     match on node to right</li><li><code>:left-most</code>    match is element is the left-most element</li><li><code>:right-most</code>   match is element is the right-most element</li></ul></div><div><a name=":fn"></a><h3><i>4.2.1 &nbsp;&nbsp; :fn</i></h3></div><div><p>The most general match, takes a predicate dispatching on a zipper location</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">z/of-string</span> <span class="s">&quot;(if true (+ 1 2) (+ 1 1))&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">match</span> <span class="p">{</span><span class="ss">:fn</span> <span class="p">(</span><span class="k">fn </span><span class="p">[</span><span class="nv">zloc</span><span class="p">]</span> <span class="p">(</span><span class="nb">= </span><span class="ss">:list</span> <span class="p">(</span><span class="nf">z/tag</span> <span class="nv">zloc</span><span class="p">)))}))</span>
+<span class="nv">=&gt;</span> <span class="nv">true</span>
+</pre></div>
+</div><div><a name=":is"></a><h3><i>4.2.2 &nbsp;&nbsp; :is</i></h3></div><div><p>The most general match, takes a value or a function</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">z/of-string</span> <span class="s">&quot;(if true (+ 1 2) (+ 1 1))&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">match</span> <span class="p">{</span><span class="ss">:child</span> <span class="p">{</span><span class="ss">:is</span> <span class="nv">true</span><span class="p">}}))</span>
+<span class="nv">=&gt;</span> <span class="nv">true</span>
+
+<span class="p">(</span><span class="nf">fact</span>
+<span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">z/of-string</span> <span class="s">&quot;(if true (+ 1 2) (+ 1 1))&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">match</span> <span class="p">{</span><span class="ss">:child</span> <span class="p">{</span><span class="ss">:is</span> <span class="p">(</span><span class="k">fn </span><span class="p">[</span><span class="nv">x</span><span class="p">]</span> <span class="p">(</span><span class="nb">instance? </span><span class="nv">Boolean</span> <span class="nv">x</span><span class="p">))}}))</span>
+<span class="nv">=&gt;</span> <span class="nv">true</span><span class="p">)</span>
+</pre></div>
+</div><div><a name=":form"></a><h3><i>4.2.3 &nbsp;&nbsp; :form</i></h3></div><div><p>By default, a symbol is evaluated as a <code>:form</code>'</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">z/of-string</span> <span class="s">&quot;(if true (+ 1 2) (+ 1 1))&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">match</span> <span class="ss">&#39;if</span><span class="p">))</span>
+<span class="nv">=&gt;</span> <span class="nv">true</span>
+</pre></div>
+</div><div><p>It can also be expressed explicitly:</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">z/of-string</span> <span class="s">&quot;(if true (+ 1 2) (+ 1 1))&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">match</span> <span class="o">&#39;</span><span class="p">{</span><span class="ss">:form</span> <span class="nv">if</span><span class="p">}))</span>
+<span class="nv">=&gt;</span> <span class="nv">true</span>
+</pre></div>
+</div><div><a name=":or"></a><h3><i>4.2.4 &nbsp;&nbsp; :or</i></h3></div><div><p>or style matching done using set notation</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">z/of-string</span> <span class="s">&quot;(if true (+ 1 2) (+ 1 1))&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">match</span> <span class="o">&#39;#</span><span class="p">{{</span><span class="ss">:form</span> <span class="nv">if</span><span class="p">}</span> <span class="p">{</span><span class="ss">:form</span> <span class="nv">defn</span><span class="p">}}))</span>
+<span class="nv">=&gt;</span> <span class="nv">true</span>
+</pre></div>
+</div><div><div class="highlight"><pre><span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">z/of-string</span> <span class="s">&quot;(if true (+ 1 2) (+ 1 1))&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">match</span> <span class="o">&#39;#</span><span class="p">{</span><span class="k">if </span><span class="nv">defn</span><span class="p">}))</span>
+<span class="nv">=&gt;</span> <span class="nv">true</span>
+</pre></div>
+</div><div><p>if need arises to match a set, use the <code>&#94;&amp;</code> meta tag</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">z/of-string</span> <span class="s">&quot;(if #{:a :b :c} (+ 1 2) (+ 1 1))&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">match</span> <span class="p">{</span><span class="ss">:child</span> <span class="p">{</span><span class="ss">:is</span> <span class="o">&#39;^&amp;</span> <span class="o">#</span><span class="p">{</span><span class="ss">:a</span> <span class="ss">:b</span> <span class="ss">:c</span><span class="p">}}}))</span>
+<span class="nv">=&gt;</span> <span class="nv">true</span>
+</pre></div>
+</div><div><a name=":and"></a><h3><i>4.2.5 &nbsp;&nbsp; :and</i></h3></div><div><p>similar usage to :or except that vector notation is used:</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">z/of-string</span> <span class="s">&quot;(if true (+ 1 2) (+ 1 1))&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">match</span> <span class="o">&#39;</span><span class="p">[</span><span class="k">if </span><span class="nv">defn</span><span class="p">]))</span>
+<span class="nv">=&gt;</span> <span class="nv">false</span>
+
+<span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">z/of-string</span> <span class="s">&quot;(if true (+ 1 2) (+ 1 1))&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">match</span> <span class="o">&#39;</span><span class="p">[</span><span class="k">if </span><span class="p">{</span><span class="ss">:contains</span> <span class="mi">1</span><span class="p">}]))</span>
+<span class="nv">=&gt;</span> <span class="nv">true</span>
+</pre></div>
+</div><div><a name=":equal"></a><h3><i>4.2.6 &nbsp;&nbsp; :equal</i></h3></div><div><p>matches sets, vectors and maps as is</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">z/of-string</span> <span class="s">&quot;(if #{:a :b :c} (+ 1 2) (+ 1 1))&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">match</span> <span class="p">{</span><span class="ss">:child</span> <span class="p">{</span><span class="ss">:equal</span> <span class="o">#</span><span class="p">{</span><span class="ss">:a</span> <span class="ss">:b</span> <span class="ss">:c</span><span class="p">}}}))</span>
+<span class="nv">=&gt;</span> <span class="nv">true</span>
+
+<span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">z/of-string</span> <span class="s">&quot;(if {:a 1 :b 2} (+ 1 2) (+ 1 1))&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">match</span> <span class="p">{</span><span class="ss">:child</span> <span class="p">{</span><span class="ss">:equal</span> <span class="p">{</span><span class="ss">:a</span> <span class="mi">1</span> <span class="ss">:b</span> <span class="mi">2</span><span class="p">}}}))</span>
+<span class="nv">=&gt;</span> <span class="nv">true</span>
+</pre></div>
+</div><div><a name=":type"></a><h3><i>4.2.7 &nbsp;&nbsp; :type</i></h3></div><div><p>predicate on the rewrite-clj reader type</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">z/of-string</span> <span class="s">&quot;(if true (+ 1 2) (+ 1 1))&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">match</span> <span class="p">{</span><span class="ss">:type</span> <span class="ss">:list</span><span class="p">}))</span>
+<span class="nv">=&gt;</span> <span class="nv">true</span>
+
+<span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">z/of-string</span> <span class="s">&quot;(if true (+ 1 2) (+ 1 1))&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">match</span> <span class="p">{</span><span class="ss">:child</span> <span class="p">{</span><span class="ss">:type</span> <span class="ss">:token</span><span class="p">}}))</span>
+<span class="nv">=&gt;</span> <span class="nv">true</span>
+</pre></div>
+</div><div><a name=":meta"></a><h3><i>4.2.8 &nbsp;&nbsp; :meta</i></h3></div><div><p>matches the meta on a location</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">z/down</span> <span class="p">(</span><span class="nf">z/of-string</span> <span class="s">&quot;^:a (+ 1 1)&quot;</span><span class="p">))</span>
+    <span class="p">(</span><span class="nf">match</span> <span class="p">{</span><span class="ss">:meta</span> <span class="ss">:a</span><span class="p">}))</span>
+<span class="nv">=&gt;</span> <span class="nv">true</span>
+
+<span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">z/down</span> <span class="p">(</span><span class="nf">z/of-string</span> <span class="s">&quot;^{:a true} (+ 1 1)&quot;</span><span class="p">))</span>
+    <span class="p">(</span><span class="nf">match</span> <span class="p">{</span><span class="ss">:meta</span> <span class="p">{</span><span class="ss">:a</span> <span class="nv">true</span><span class="p">}}))</span>
+<span class="nv">=&gt;</span> <span class="nv">true</span>
+</pre></div>
+</div><div><a name=":pattern"></a><h3><i>4.2.9 &nbsp;&nbsp; :pattern</i></h3></div><div><p>pattern matches are done automatically with a list</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">z/of-string</span> <span class="s">&quot;(if true (+ 1 2) (+ 1 1))&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">match</span> <span class="o">&#39;</span><span class="p">(</span><span class="k">if </span><span class="nv">true</span> <span class="o">&amp;</span> <span class="nv">_</span><span class="p">)))</span>
+<span class="nv">=&gt;</span> <span class="nv">true</span>
+</pre></div>
+</div><div><p>but they can be made more explicit:</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">z/of-string</span> <span class="s">&quot;(if true (+ 1 2) (+ 1 1))&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">match</span> <span class="p">{</span><span class="ss">:pattern</span> <span class="o">&#39;</span><span class="p">(</span><span class="k">if </span><span class="nv">true</span> <span class="o">&amp;</span> <span class="nv">_</span><span class="p">)}))</span>
+<span class="nv">=&gt;</span> <span class="nv">true</span>
+</pre></div>
+</div><div><a name=":parent"></a><h3><i>4.2.10 &nbsp;&nbsp; :parent</i></h3></div><div><p>matches on the parent form</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">z/of-string</span> <span class="s">&quot;(if true (+ 1 2) (+ 1 1))&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">z/down</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">z/right</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">match</span> <span class="p">{</span><span class="ss">:parent</span> <span class="ss">&#39;if</span><span class="p">}))</span>
+<span class="nv">=&gt;</span> <span class="nv">true</span>
+</pre></div>
+</div><div><a name=":child"></a><h3><i>4.2.11 &nbsp;&nbsp; :child</i></h3></div><div><p>matches on any of the child forms</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">z/of-string</span> <span class="s">&quot;(if true (+ 1 2) (+ 1 1))&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">match</span> <span class="p">{</span><span class="ss">:child</span> <span class="o">&#39;</span><span class="p">(</span><span class="nb">+ </span><span class="nv">_</span> <span class="mi">2</span><span class="p">)}))</span>
+<span class="nv">=&gt;</span> <span class="nv">true</span>
+</pre></div>
+</div><div><a name=":first"></a><h3><i>4.2.12 &nbsp;&nbsp; :first</i></h3></div><div><p>matches on the first child, can also be a vector</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">z/of-string</span> <span class="s">&quot;(if [1 2 3] (+ 1 2) (+ 1 1))&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">match</span> <span class="p">{</span><span class="ss">:child</span> <span class="p">{</span><span class="ss">:first</span> <span class="ss">&#39;+</span><span class="p">}}))</span>
+<span class="nv">=&gt;</span> <span class="nv">true</span>
+
+<span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">z/of-string</span> <span class="s">&quot;(if [1 2 3] (+ 1 2) (+ 1 1))&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">match</span> <span class="p">{</span><span class="ss">:child</span> <span class="p">{</span><span class="ss">:first</span> <span class="mi">1</span><span class="p">}}))</span>
+<span class="nv">=&gt;</span> <span class="nv">true</span>
+</pre></div>
+</div><div><a name=":last"></a><h3><i>4.2.13 &nbsp;&nbsp; :last</i></h3></div><div><p>matches on the last child element</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">z/of-string</span> <span class="s">&quot;(if [1 2 3] (+ 1 2) (+ 1 1))&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">match</span> <span class="p">{</span><span class="ss">:child</span> <span class="p">{</span><span class="ss">:last</span> <span class="mi">3</span><span class="p">}}))</span>
+<span class="nv">=&gt;</span> <span class="nv">true</span>
+
+<span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">z/of-string</span> <span class="s">&quot;(if [1 2 3] (+ 1 2) (+ 1 1))&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">match</span> <span class="p">{</span><span class="ss">:child</span> <span class="p">{</span><span class="ss">:last</span> <span class="mi">1</span><span class="p">}}))</span>
+<span class="nv">=&gt;</span> <span class="nv">true</span>
+</pre></div>
+</div><div><a name=":nth"></a><h3><i>4.2.14 &nbsp;&nbsp; :nth</i></h3></div><div><p>matches the nth child</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">z/of-string</span> <span class="s">&quot;(if [1 2 3] (+ 1 2) (+ 1 1))&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">match</span> <span class="p">{</span><span class="ss">:nth</span> <span class="p">[</span><span class="mi">1</span> <span class="p">{</span><span class="ss">:equal</span> <span class="p">[</span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span><span class="p">]}]}))</span>
+<span class="nv">=&gt;</span> <span class="nv">true</span>
+</pre></div>
+</div><div><a name=":nth-left"></a><h3><i>4.2.15 &nbsp;&nbsp; :nth-left</i></h3></div><div><p>matches the nth sibling to the left</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">z/of-string</span> <span class="s">&quot;(if [1 2 3] (+ 1 2) (+ 1 1))&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">z/down</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">z/rightmost</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">match</span> <span class="p">{</span><span class="ss">:nth-left</span> <span class="p">[</span><span class="mi">2</span> <span class="p">{</span><span class="ss">:equal</span> <span class="p">[</span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span><span class="p">]}]}))</span>
+<span class="nv">=&gt;</span> <span class="nv">true</span>
+</pre></div>
+</div><div><a name=":nth-right"></a><h3><i>4.2.16 &nbsp;&nbsp; :nth-right</i></h3></div><div><p>matches the nth sibling to the right</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">z/of-string</span> <span class="s">&quot;(if [1 2 3] (+ 1 2) (+ 1 1))&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">z/down</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">match</span> <span class="p">{</span><span class="ss">:nth-right</span> <span class="p">[</span><span class="mi">1</span> <span class="p">{</span><span class="ss">:equal</span> <span class="p">[</span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span><span class="p">]}]}))</span>
+<span class="nv">=&gt;</span> <span class="nv">true</span>
+</pre></div>
+</div><div><a name=":nth-ancestor"></a><h3><i>4.2.17 &nbsp;&nbsp; :nth-ancestor</i></h3></div><div><p>matches the nth ancestor in the hierarchy</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">z/of-string</span> <span class="s">&quot;(if [1 2 3] (+ 1 2) (+ 1 1))&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">z/down</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">z/right</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">z/down</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">match</span> <span class="p">{</span><span class="ss">:nth-ancestor</span> <span class="p">[</span><span class="mi">2</span> <span class="p">{</span><span class="ss">:form</span> <span class="ss">&#39;if</span><span class="p">}]}))</span>
+<span class="nv">=&gt;</span> <span class="nv">true</span>
+</pre></div>
+</div><div><a name=":nth-contains"></a><h3><i>4.2.18 &nbsp;&nbsp; :nth-contains</i></h3></div><div><p>matches the nth level children</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">z/of-string</span> <span class="s">&quot;(if [1 2 3] (+ 1 2) (+ 1 1))&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">match</span> <span class="p">{</span><span class="ss">:nth-contains</span> <span class="p">[</span><span class="mi">2</span> <span class="p">{</span><span class="ss">:is</span> <span class="mi">3</span><span class="p">}]}))</span>
+<span class="nv">=&gt;</span> <span class="nv">true</span>
+</pre></div>
+</div><div><a name=":ancestor"></a><h3><i>4.2.19 &nbsp;&nbsp; :ancestor</i></h3></div><div><p>matches any ancestor</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">z/of-string</span> <span class="s">&quot;(if [1 2 3] (+ 1 2) (+ 1 1))&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">z/down</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">z/right</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">z/down</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">match</span> <span class="p">{</span><span class="ss">:ancestor</span> <span class="ss">&#39;if</span><span class="p">}))</span>
+<span class="nv">=&gt;</span> <span class="nv">true</span>
+</pre></div>
+</div><div><a name=":contains"></a><h3><i>4.2.20 &nbsp;&nbsp; :contains</i></h3></div><div><p>matches the any subelement contained by the element</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">z/of-string</span> <span class="s">&quot;(if [1 2 3] (+ 1 2) (+ 1 1))&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">match</span> <span class="p">{</span><span class="ss">:contains</span> <span class="mi">3</span><span class="p">}))</span>
+<span class="nv">=&gt;</span> <span class="nv">true</span>
+</pre></div>
+</div><div><a name=":sibling"></a><h3><i>4.2.21 &nbsp;&nbsp; :sibling</i></h3></div><div><p>matches any sibling</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">z/of-string</span> <span class="s">&quot;(if [1 2 3] (+ 1 2) (+ 1 1))&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">z/down</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">match</span> <span class="p">{</span><span class="ss">:sibling</span> <span class="p">{</span><span class="ss">:form</span> <span class="ss">&#39;+</span><span class="p">}}))</span>
+<span class="nv">=&gt;</span> <span class="nv">true</span>
+</pre></div>
+</div><div><a name=":left"></a><h3><i>4.2.22 &nbsp;&nbsp; :left</i></h3></div><div><p>matches element to the left</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">z/of-string</span> <span class="s">&quot;(if [1 2 3] (+ 1 2) (+ 1 1))&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">z/down</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">z/right</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">match</span> <span class="p">{</span><span class="ss">:left</span> <span class="p">{</span><span class="ss">:is</span> <span class="ss">&#39;if</span><span class="p">}}))</span>
+<span class="nv">=&gt;</span> <span class="nv">true</span>
+</pre></div>
+</div><div><a name=":right"></a><h3><i>4.2.23 &nbsp;&nbsp; :right</i></h3></div><div><p>matches element to the right</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">z/of-string</span> <span class="s">&quot;(if [1 2 3] (+ 1 2) (+ 1 1))&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">z/down</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">match</span> <span class="p">{</span><span class="ss">:right</span> <span class="p">{</span><span class="ss">:is</span> <span class="p">[</span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span><span class="p">]}}))</span>
+<span class="nv">=&gt;</span> <span class="nv">true</span>
+</pre></div>
+</div><div><a name=":left-of"></a><h3><i>4.2.24 &nbsp;&nbsp; :left-of</i></h3></div><div><p>matches any element to the left</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">z/of-string</span> <span class="s">&quot;(if [1 2 3] (+ 1 2) (+ 1 1))&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">z/down</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">z/rightmost</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">match</span> <span class="p">{</span><span class="ss">:left-of</span> <span class="p">{</span><span class="ss">:is</span> <span class="p">[</span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span><span class="p">]}}))</span>
+<span class="nv">=&gt;</span> <span class="nv">true</span>
+</pre></div>
+</div><div><a name=":right-of"></a><h3><i>4.2.25 &nbsp;&nbsp; :right-of</i></h3></div><div><p>matches any element to the right</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">z/of-string</span> <span class="s">&quot;(if [1 2 3] (+ 1 2) (+ 1 1))&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">z/down</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">match</span> <span class="p">{</span><span class="ss">:right-of</span> <span class="o">&#39;</span><span class="p">(</span><span class="nb">+ </span><span class="mi">1</span> <span class="mi">1</span><span class="p">)}))</span>
+<span class="nv">=&gt;</span> <span class="nv">true</span>
+</pre></div>
+</div><div><a name=":left-most"></a><h3><i>4.2.26 &nbsp;&nbsp; :left-most</i></h3></div><div><p>is the left-most element</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">z/of-string</span> <span class="s">&quot;(if [1 2 3] (+ 1 2) (+ 1 1))&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">z/down</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">match</span> <span class="p">{</span><span class="ss">:left-most</span> <span class="nv">true</span><span class="p">}))</span>
+<span class="nv">=&gt;</span> <span class="nv">true</span>
+</pre></div>
+</div><div><a name=":right-most"></a><h3><i>4.2.27 &nbsp;&nbsp; :right-most</i></h3></div><div><p>is the right-most element</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">z/of-string</span> <span class="s">&quot;(if [1 2 3] (+ 1 2) (+ 1 1))&quot;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">z/down</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">z/rightmost</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">match</span> <span class="p">{</span><span class="ss">:right-most</span> <span class="nv">true</span><span class="p">}))</span>
+<span class="nv">=&gt;</span> <span class="nv">true</span>
+</pre></div>
+</div></section></body><script type="text/javascript">var metas = document.getElementsByTagName('meta');
+var i;
+if (navigator.userAgent.match(/iPhone/i)) {
+  for (i=0; i<metas.length; i++) {
+    if (metas[i].name == "viewport") {
+      metas[i].content = "width=device-width, minimum-scale=1.0, maximum-scale=1.0";
+    }
+  }
+  document.addEventListener("gesturestart", gestureStart, false);
+}
+function gestureStart() {
+  for (i=0; i<metas.length; i++) {
+    if (metas[i].name == "viewport") {
+      metas[i].content = "width=device-width, minimum-scale=0.25, maximum-scale=1.6";
+    }
+  }
+}</script><script>var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-31320512-2']);
+        _gaq.push(['_trackPageview']);
+
+        (function() {
+          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();</script></html>
