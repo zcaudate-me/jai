@@ -2,14 +2,15 @@
 
 [![Build Status](https://travis-ci.org/zcaudate/jai.png?branch=master)](https://travis-ci.org/zcaudate/jai)
 
-Manipulate source code like the DOM
-
+Manipulate source code like the DOM 
 ## Introduction
-[jai](https://github.com/zcaudate/jai) makes it easy for querying and manipulation of clojure source code through an xpath/css-inspired syntax
+[jai](https://github.com/zcaudate/jai) makes it easy for querying and manipulation of clojure source code through an xpath/css-inspired syntax.
 
  - to simplify traversal and manipulation of source code
  - to provide higher level abstractions on top of [rewrite-clj](https://github.com/xsc/rewrite-clj)
  - to leverage [core.match](https://github.com/clojure/core.match)'s pattern matching 
+
+A [blog post](http://z.caudate.me/manipulate-source-code-like-the-dom/) that tells a little bit more about it.
 
 ## Motivation
 
