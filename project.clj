@@ -1,4 +1,4 @@
-(defproject im.chit/jai "0.2.2"
+(defproject im.chit/jai "0.2.3"
   :description "Manipulate source code like the DOM"
   :url "http://github.com/zcaudate/jai"
   :license {:name "The MIT License"
