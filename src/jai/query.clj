@@ -4,7 +4,8 @@
             [jai.query.compile :as compile]
             [jai.query.traverse :as traverse]
             [jai.query.walk :as walk]
-            [rewrite-clj.zip :as source]))
+            [rewrite-clj.zip :as source])
+  (:refer-clojure :exclude [find]))
 
 (defn match
   "matches the source code
@@ -70,19 +71,23 @@
   => '((defn hello  [] (if (try)))
        (defn hello2 [] (if (try))))"
   {:added "0.2"}
-  [zloc selectors]
-  (let [[match-map [cidx ctype cform]] (compile/prepare selectors)
-        match-fn (match/compile-matcher match-map)]
-    (let [atm  (atom [])]
-      (walk/matchwalk zloc
-                      [match-fn]
-                      (fn [zloc]
-                        (swap! atm conj 
-                               (if (= :form ctype)
-                                 (:source (traverse/traverse zloc cform))
-                                 zloc))
-                        zloc))
-      @atm)))
+  ([zloc selectors] (select zloc selectors nil))
+  ([zloc selectors opts]
+   (let [[match-map [cidx ctype cform]] (compile/prepare selectors)
+         match-fn (match/compile-matcher match-map)
+         walk-fn (case (:walk opts)
+                   :top walk/topwalk
+                   walk/matchwalk)]
+     (let [atm  (atom [])]
+       (walk-fn zloc
+                [match-fn]
+                (fn [zloc]
+                  (swap! atm conj 
+                         (if (= :form ctype)
+                           (:source (traverse/traverse zloc cform))
+                           zloc))
+                  zloc))
+       @atm))))
 
 (defn modify
   "modifies location given a function
@@ -92,20 +97,24 @@
              (source/insert-left zloc :hello))))
   => \"^:a (defn :hello hello3) (defn :hello hello)\""
   {:added "0.2"}
-  [zloc selectors func]
-  (let [[match-map [cidx ctype cform]] (compile/prepare selectors)
-        match-fn (match/compile-matcher match-map)]
-    (walk/matchwalk zloc
-                    [match-fn]
-                    (fn [zloc]
-                      (if (= :form ctype)
-                        (let [{:keys [level source]} (traverse/traverse zloc cform)
-                              nsource (func source)]
-                          
-                          (if (or (nil? level) (= level 0))
-                            nsource
-                            (nth (iterate source/up nsource) level)))
-                        (func zloc))))))
+  ([zloc selectors func] (modify zloc selectors func nil))
+  ([zloc selectors func opts]
+   (let [[match-map [cidx ctype cform]] (compile/prepare selectors)
+         match-fn (match/compile-matcher match-map)
+         walk-fn (case (:walk opts)
+                   :top walk/topwalk
+                   walk/matchwalk)]
+     (walk-fn zloc
+              [match-fn]
+              (fn [zloc]
+                (if (= :form ctype)
+                  (let [{:keys [level source]} (traverse/traverse zloc cform)
+                        nsource (func source)]
+                    
+                    (if (or (nil? level) (= level 0))
+                      nsource
+                      (nth (iterate source/up nsource) level)))
+                  (func zloc)))))))
 
 (defn context-zloc [context]
   (cond (string? context)
@@ -147,10 +156,10 @@
                           (map? func?) [nil func?]
                           :else [func? opts?])
         results     (cond func
-                          (modify zloc path func)
+                          (modify zloc path func opts)
                           
                           :else
-                          (select zloc path))
+                          (select zloc path opts))
         opts         (merge {:return (if func :zipper :sexpr)} opts)]
     ((-> (fn [res opts] res)
           wrap-return

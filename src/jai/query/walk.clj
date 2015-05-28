@@ -32,3 +32,16 @@
 
 (defn matchwalk [zloc matchers f] 
   ((wrap-meta matchwalk-base) zloc matchers f (wrap-meta matchwalk-base)))
+
+(defn topwalk-base
+  [zloc [matcher] f recur-fn]
+  (let [nloc  (if (matcher zloc)
+                (f zloc)
+                zloc)
+        nloc  (if-let [zright (z/right nloc)]
+                (z/left (recur-fn zright [matcher] f recur-fn))
+                nloc)]
+    nloc))
+
+(defn topwalk [zloc [matcher] f]
+  ((wrap-meta topwalk-base) zloc [matcher] f (wrap-meta topwalk-base)))
