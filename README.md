@@ -36,7 +36,7 @@ As lisp code follows a tree-like structure, it is very useful to be able to have
 Add to project.clj dependencies:
 
 ```clojure
-[im.chit/jai "0.2.3"]
+[im.chit/jai "0.2.5"]
 ```
 
 All functionality is in the `jai.query` namespace:
