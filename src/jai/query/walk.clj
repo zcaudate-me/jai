@@ -27,10 +27,10 @@
       (let [nloc (z/up (walk-fn (-> zloc z/down z/right) matchers f recur-fn))]
         (if (z/right nloc)
           (walk-fn (z/right nloc) matchers f recur-fn)
-          nloc))      
+          nloc))
       (walk-fn zloc matchers f recur-fn))))
 
-(defn matchwalk [zloc matchers f] 
+(defn matchwalk [zloc matchers f]
   ((wrap-meta matchwalk-base) zloc matchers f (wrap-meta matchwalk-base)))
 
 (defn topwalk-base

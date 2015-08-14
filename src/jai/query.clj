@@ -87,7 +87,9 @@
                            (:source (traverse/traverse zloc cform))
                            zloc))
                   zloc))
-       @atm))))
+       (if (:first opts)
+         (first @atm)
+         @atm)))))
 
 (defn modify
   "modifies location given a function
