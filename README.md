@@ -2,6 +2,20 @@
 
 [![Build Status](https://travis-ci.org/zcaudate/jai.png?branch=master)](https://travis-ci.org/zcaudate/jai)
 
+### Installation
+
+Add to project.clj dependencies:
+
+```clojure
+[im.chit/jai "0.2.10"]
+```
+
+All functionality is in the `jai.query` namespace:
+
+```clojure
+> (use jai.query)
+```
+
 Manipulate source code like the DOM
 ## Introduction
 [jai](https://github.com/zcaudate/jai) makes it easy for querying and manipulation of clojure source code through an xpath/css-inspired syntax.
@@ -29,20 +43,6 @@ As lisp code follows a tree-like structure, it is very useful to be able to have
 
 ```clojure
 ($ zloc [(defn ^:% vector? | _)] do-something)
-```
-
-### Installation
-
-Add to project.clj dependencies:
-
-```clojure
-[im.chit/jai "0.2.8"]
-```
-
-All functionality is in the `jai.query` namespace:
-
-```clojure
-> (use jai.query)
 ```
 
 ### Documentation
