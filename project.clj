@@ -1,4 +1,4 @@
-(defproject im.chit/jai "0.2.10"
+(defproject im.chit/jai "0.2.11"
   :description "Manipulate source code like the DOM"
   :url "http://github.com/zcaudate/jai"
   :license {:name "The MIT License"
@@ -13,7 +13,7 @@
                             :author "Chris Zheng"
                             :email  "z@caudate.me"
                             :tracking "UA-31320512-2"}}}
-  :dependencies [[org.clojure/clojure "1.6.0"]
+  :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/core.match "0.2.2"]
-                 [rewrite-clj "0.4.12"]
-                 [im.chit/hara.common "2.2.17"]])
+                 [rewrite-clj "0.5.1"]
+                 [im.chit/hara.common.checks "2.4.0"]])
