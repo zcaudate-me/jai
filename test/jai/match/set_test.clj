@@ -1,5 +1,5 @@
 (ns jai.match.set-test
-  (:use midje.sweet)
+  (:use hara.test)
   (:require  [jai.match.pattern :refer :all]
              [clojure.core.match :as match]))
 

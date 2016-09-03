@@ -1,5 +1,5 @@
 (ns jai.query.traverse-test
-  (:use midje.sweet)
+  (:use hara.test)
   (:require [rewrite-clj.zip :as source]
             [clojure.zip :as zip]
             [jai.query.traverse :refer :all]))

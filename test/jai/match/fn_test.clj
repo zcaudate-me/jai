@@ -1,5 +1,5 @@
 (ns jai.match.fn-test
-  (:use midje.sweet)
+  (:use hara.test)
   (:require  [jai.match [pattern :refer :all] fn]))
 
 ^{:refer jai.match.fn/pattern-fn :added "0.2"}

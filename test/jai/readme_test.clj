@@ -1,5 +1,5 @@
 (ns jai.readme-test
-  (:use midje.sweet)
+  (:use hara.test)
   (:require [jai.query :refer :all]
             [rewrite-clj.zip :as z]))
 

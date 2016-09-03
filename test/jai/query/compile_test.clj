@@ -1,5 +1,5 @@
 (ns jai.query.compile-test
-  (:use midje.sweet)
+  (:use hara.test)
   (:require [jai.query.compile :refer :all]
             [rewrite-clj.zip :as source]))
 

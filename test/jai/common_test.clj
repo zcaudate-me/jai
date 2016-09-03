@@ -1,5 +1,5 @@
 (ns jai.common-test
-  (:use midje.sweet)
+  (:use [hara.test :exclude [any]])
   (:require [jai.common :refer :all]))
 
 ^{:refer jai.common/any :added "0.2"}
@@ -9,7 +9,7 @@
 
 ^{:refer jai.common/none :added "0.2"}
 (fact "returns false for any value"
-  (none nil) => false
+  (none nil) => false	
   (none '_) => false)
 
 ^{:refer jai.common/expand-meta :added "0.2"}
