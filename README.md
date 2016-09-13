@@ -7,7 +7,7 @@
 Add to project.clj dependencies:
 
 ```clojure
-[im.chit/jai "0.2.10"]
+[im.chit/jai "0.2.12"]
 ```
 
 All functionality is in the `jai.query` namespace:

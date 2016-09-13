@@ -1,9 +1,9 @@
-(defproject im.chit/jai "0.2.11"
+(defproject im.chit/jai "0.2.12"
   :description "Manipulate source code like the DOM"
   :url "http://github.com/zcaudate/jai"
   :license {:name "The MIT License"
             :url "http://opensource.org/licenses/MIT"}
-  :aliases  {"test" ["run" "-m" "hara.test"]}
+  :aliases  {"test" ["run" "-m" "hara.test" "exit"]}
   :documentation {:files {"docs/index"
                            {:input "test/jai/readme_test.clj"
                             :title "jai"
@@ -14,6 +14,6 @@
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/core.match "0.2.2"]
                  [rewrite-clj "0.5.1"]
-                 [im.chit/hara.common.checks "2.4.0"]]
-  :profiles {:dev {:dependencies [[im.chit/hara.test "2.4.0"]]
+                 [im.chit/hara.common.checks "2.4.2"]]
+  :profiles {:dev {:dependencies [[im.chit/hara.test "2.4.2"]]
                    :plugins [[lein-midje-doc "0.0.24"]]}})
